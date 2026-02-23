@@ -1,0 +1,110 @@
+# =============================================================================
+# International Ragweed Databases - Cross-Domain Dataset Configuration
+# =============================================================================
+#
+# This config defines the source databases used to build a unified AMBEL
+# (ragweed) detection dataset. Each database has different formats, class IDs,
+# and directory structures. The build script reads this file to:
+#   1. Parse annotations from each database's native format
+#   2. Filter images that contain ragweed annotations
+#   3. Remap all ragweed classes to a single target class (0 = AMBEL)
+#   4. Export a unified YOLO-format dataset with train/val/test splits
+#
+# Usage:
+#   python scripts/cli/build_crossdomain_dataset.py \
+#       --config configs/crossdomain/international_databases.yaml
+# =============================================================================
+
+# ---------------------
+# Output configuration
+# ---------------------
+output_dir: /media/malezainia2/E/ProcessingData/ambel-international-v1/
+
+# Target class: all ragweed annotations are remapped to this single class
+target_class: 0
+target_class_name: AMBEL
+
+# ---------------------
+# Source databases
+# ---------------------
+databases:
+
+  # ===========================================================================
+  # DB01a - North Dakota Individual Weed Images
+  # ===========================================================================
+  # Close-up images of individual ragweed plants. Single-class subset (ragweed
+  # only). YOLO TXT format with class_id=2.
+  # Source: ImageWeeds dataset, North Dakota State University
+  nd_individual:
+    prefix: ND_Indiv
+    images: /media/malezainia2/E/rageweed_international_databases/01_ImageWeeds_NorthDakota/Individual_Weed/ragweed/images/
+    labels: /media/malezainia2/E/rageweed_international_databases/01_ImageWeeds_NorthDakota/Individual_Weed/ragweed/labels/TXT/
+    format: yolo_txt
+    ragweed_class_id: 2
+    image_ext: .jpg
+    expected_count: 878
+    filter_ragweed_only: false  # All images in this subset contain ragweed
+
+  # ===========================================================================
+  # DB01b - North Dakota Aerial Weed Images
+  # ===========================================================================
+  # Aerial (drone) images with multi-class weed annotations. Contains 5 weed
+  # species; we filter to images with at least one ragweed bbox (class 2).
+  # Other classes: 0=kochia, 1=horseweed, 3=redrootpigweed, 4=waterhemp
+  nd_aerial:
+    prefix: ND_Aerial
+    images: /media/malezainia2/E/rageweed_international_databases/01_ImageWeeds_NorthDakota/Aerial_Weeds/Images/
+    labels: /media/malezainia2/E/rageweed_international_databases/01_ImageWeeds_NorthDakota/Aerial_Weeds/labels/TXT/
+    format: yolo_txt_multiclass
+    ragweed_class_id: 2
+    other_classes: [0, 1, 3, 4]  # kochia, horseweed, redrootpigweed, waterhemp
+    image_ext: .jpg
+    expected_count: 277  # Images containing ragweed (out of 551 total)
+    filter_ragweed_only: true  # Only include images with at least one ragweed annotation
+
+  # ===========================================================================
+  # DB03 - Michigan 3-Season Weed Detection (2021-2023)
+  # ===========================================================================
+  # Multi-season weed detection dataset with Pascal VOC XML annotations.
+  # Images and XMLs are co-located in yearly directories. Class name is
+  # "Ragweed" (CamelCase). Filter to images containing at least one Ragweed box.
+  # Source: 3SeasonWeedDet10 dataset, Michigan State University
+  michigan_3season:
+    prefix: MI_3Season
+    data_dirs:
+      - /media/malezainia2/E/rageweed_international_databases/03_3SeasonWeedDet10_Michigan/data2021/
+      - /media/malezainia2/E/rageweed_international_databases/03_3SeasonWeedDet10_Michigan/data2022/
+      - /media/malezainia2/E/rageweed_international_databases/03_3SeasonWeedDet10_Michigan/data2023/
+    format: voc_xml
+    ragweed_class_name: Ragweed  # CamelCase, as it appears in XML annotations
+    image_ext: .jpg
+    expected_count: 719  # Images containing Ragweed (512 + 93 + 114)
+    filter_ragweed_only: true  # Only include images with at least one Ragweed bbox
+
+  # ===========================================================================
+  # DB07 - Weed-Crop Precision Agriculture Dataset
+  # ===========================================================================
+  # Multi-crop, multi-weed RGB dataset for robotic weed control. Images and
+  # YOLO TXT labels are co-located in per-crop subdirectories. Ragweed is
+  # class 8. Filter to images with at least one ragweed annotation.
+  # Note: image extension is uppercase .JPG
+  # Source: Weed-crop dataset in precision agriculture
+  weedcrop_precag:
+    prefix: WeedCrop
+    base_dir: "/media/malezainia2/E/rageweed_international_databases/7.include this/Weed-crop dataset in precision agriculture Resource for AI-based robotic weed control systems/Weed-crop RGB dataset/"
+    crop_subdirs:
+      - Black bean
+      - Canola
+      - Corn
+      - Field pea
+      - Flax
+      - Lentil
+      - Soybean
+      - Sugar beet
+    format: yolo_txt_multiclass
+    ragweed_class_id: 8
+    image_ext: .JPG  # Uppercase extension
+    expected_count: 495  # Images containing ragweed (out of 1120 total)
+    filter_ragweed_only: true  # Only include images with at least one ragweed annotation
+    exclude_files:
+      - classes.txt  # Present in subdirectories, not an image/label pair

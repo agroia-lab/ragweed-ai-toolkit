@@ -1,0 +1,24 @@
+# AMBEL International Test Set v1
+# ================================
+# Test-only YOLO config for cross-domain evaluation.
+# Built by: scripts/cli/build_international_dataset.py
+# Evaluated by: scripts/cli/crossdomain_eval.py
+#
+# 4 international ragweed databases, single class (AMBEL):
+#   ND_Indiv:    878 images  (North Dakota, ground, YOLO class 2→0)
+#   ND_Aerial:   277 images  (North Dakota, drone, YOLO class 2→0)
+#   MI_3Season:  719 images  (Michigan, 3 seasons, VOC XML→YOLO)
+#   WeedCrop:    495 images  (8 crop backgrounds, YOLO class 8→0)
+# Total: ~2,369 images
+#
+# NOTE: train/val/test all point to images/ because this is a
+# test-only dataset. YOLO requires val for model.val() to work.
+
+path: /media/malezainia2/E/ProcessingData/ambel-international-v1
+train: images
+val: images
+test: images
+
+nc: 1
+names:
+  0: AMBEL

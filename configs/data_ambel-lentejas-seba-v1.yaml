@@ -1,0 +1,14 @@
+# AMBEL (Ambrosia artemisiifolia) Single-Class Detection Dataset — Augmented
+# Source: Roboflow (peppo-4-rotaciones/ambrosia-lentejas-seba-0rdlg v1)
+# Images: ~1050x915 native resolution, 4955 total (3x augmented)
+# Augmentations: random crop 0-29%, rotation ±15°, salt & pepper noise
+# License: CC BY 4.0
+
+path: /media/malezainia2/E/ProcessingData/ambrosia-lentejas-seba-v1
+train: train/images
+val: valid/images
+test: test/images
+
+nc: 1
+names:
+  0: AMBEL

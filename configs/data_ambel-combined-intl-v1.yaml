@@ -1,0 +1,15 @@
+# AMBEL Combined Chilean + International Dataset v1
+# ==================================================
+# Merges CL_Seba (4,955), CL_Alberto (659), and 4 international databases (2,367)
+# into a single training dataset with source-stratified splits.
+# Total: ~7,981 images, single class (AMBEL)
+# Built by: scripts/cli/build_combined_dataset.py
+
+path: /media/malezainia2/E/ProcessingData/ambel-combined-intl-v1
+train: train/images
+val: valid/images
+test: test/images
+
+nc: 1
+names:
+  0: AMBEL
