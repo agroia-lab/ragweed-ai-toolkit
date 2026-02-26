@@ -1,0 +1,63 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+*.egg
+dist/
+build/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Data (do not commit large files)
+*.pt
+*.pth
+*.onnx
+*.tif
+*.tiff
+*.shp
+*.shx
+*.dbf
+*.prj
+*.cpg
+*.gpkg
+*.geojson
+*.npz
+*.npy
+*.h5
+*.hdf5
+*.zip
+*.tar.gz
+*.7z
+
+# Images (keep chapter figures, ignore generated)
+outputs/
+*.jpg
+*.jpeg
+*.png
+!chapter/figures/*.png
+!chapter/figures/*.jpg
+!docs/images/*.png
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+*.log
