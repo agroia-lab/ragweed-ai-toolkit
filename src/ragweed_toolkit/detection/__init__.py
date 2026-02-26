@@ -11,12 +11,9 @@ Key components:
     - inference: SAHI sliced inference for images beyond training resolution
     - gps: EXIF GPS coordinate extraction to GeoDataFrame
     - evaluation: mAP50, mAP50:95, precision, recall metrics
-"""
 
-from ragweed_toolkit.detection.trainer import TrainingConfig, train
-from ragweed_toolkit.detection.inference import SahiConfig, run_sahi, run_sahi_batch
-from ragweed_toolkit.detection.gps import extract_gps, extract_gps_geodataframe
-from ragweed_toolkit.detection.evaluation import evaluate
+Requires: pip install ragweed-ai-toolkit[detection]
+"""
 
 __all__ = [
     "TrainingConfig",
@@ -28,3 +25,15 @@ __all__ = [
     "extract_gps_geodataframe",
     "evaluate",
 ]
+
+try:
+    from ragweed_toolkit.detection.trainer import TrainingConfig, train
+    from ragweed_toolkit.detection.inference import SahiConfig, run_sahi, run_sahi_batch
+    from ragweed_toolkit.detection.evaluation import evaluate
+except ImportError:
+    pass
+
+try:
+    from ragweed_toolkit.detection.gps import extract_gps, extract_gps_geodataframe
+except ImportError:
+    pass

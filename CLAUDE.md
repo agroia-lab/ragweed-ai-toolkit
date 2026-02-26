@@ -1,4 +1,4 @@
-# CLAUDE.md — DLM6 Weed Toolkit Chapter
+# CLAUDE.md — Ragweed AI Toolkit
 
 ## Project
 
@@ -7,36 +7,126 @@ This repository is the companion toolkit for a Springer Nature book chapter:
 - **Volume**: Smart-Agriculture and Technology-Innovation: Facing the Dynamic of Climate Change
 - **Editor**: Prof. Noureddine Benkeblia, University of the West Indies
 - **Publisher**: Springer Nature
-- **Deadline**: February 23, 2026
 - **Format**: LaTeX (svmult.cls), APA 7th Edition citations
+
+## Package Name
+
+**ragweed-ai-toolkit** (PyPI) / `ragweed_toolkit` (Python import)
+
+## Installation
+
+```bash
+# Core (numpy, scipy, geopandas, matplotlib, sklearn, pandas)
+pip install -e .
+
+# With all optional modules
+pip install -e ".[all]"
+
+# Specific extras
+pip install -e ".[detection]"      # ultralytics, sahi, opencv
+pip install -e ".[embeddings]"     # torch, torchvision, umap-learn
+pip install -e ".[spatial]"        # esda, libpysal, mgwr, spreg
+pip install -e ".[satellite]"      # earthengine-api, rasterio
+pip install -e ".[viz]"            # plotly, matplotlib-scalebar
+pip install -e ".[dev]"            # pytest, ruff, pre-commit
+```
+
+## Running Tests
+
+```bash
+pytest tests/ -v
+pytest tests/ -v --tb=short        # shorter traceback
+pytest tests/test_embeddings.py -v  # single module
+```
+
+## Package Structure
+
+```
+src/ragweed_toolkit/
+├── detection/         # YOLO training + SAHI inference + GPS + evaluation
+├── embeddings/        # ResNet-50 features, MMD, PCA/UMAP/t-SNE, viz
+├── geostatistics/     # Variograms + ordinary kriging
+├── spatial/           # Moran's I, LISA, GWR, cross-variograms
+├── satellite/         # Sentinel-2 indices, PRESTO, NDVI, composites
+├── crossdomain/       # Multi-source dataset builder + evaluation
+├── orthomosaic/       # Raster tiling for drone orthomosaics
+└── viz/               # Publication-quality figures (plotly + matplotlib)
+```
+
+## Import Patterns
+
+```python
+# Detection
+from ragweed_toolkit.detection import TrainingConfig, train
+from ragweed_toolkit.detection import SahiConfig, run_sahi, run_sahi_batch
+
+# Embeddings
+from ragweed_toolkit.embeddings import FeatureExtractor, extract_embeddings
+from ragweed_toolkit.embeddings import compute_mmd, permutation_test, deployment_gate
+from ragweed_toolkit.embeddings import reduce_embeddings
+
+# Geostatistics
+from ragweed_toolkit.geostatistics import (
+    compute_experimental_variogram, fit_exponential_model, ordinary_kriging,
+)
+
+# Spatial
+from ragweed_toolkit.spatial import compute_bivariate_morans, compute_bivariate_lisa
+from ragweed_toolkit.spatial import fit_ols, fit_gwr, compare_ols_gwr
+from ragweed_toolkit.spatial import compute_cross_variogram
+
+# Satellite
+from ragweed_toolkit.satellite import compute_spectral_indices
+
+# Cross-domain
+from ragweed_toolkit.crossdomain import build_international_dataset, build_combined_dataset
+```
+
+## Examples
+
+Self-contained demo scripts in `examples/`:
+
+| Script | What it demonstrates |
+|--------|---------------------|
+| `01_train_detector.py` | TrainingConfig setup (print-only, no GPU) |
+| `02_sahi_field_inference.py` | SahiConfig + batch inference pattern |
+| `03_embeddings_mmd.py` | MMD domain shift + deployment gate |
+| `04_kriging_density.py` | Variogram fitting from synthetic points |
+| `05_lisa_clusters.py` | Bivariate LISA with synthetic spatial data |
+| `06_spectral_indices.py` | 9 Sentinel-2 indices from mock bands |
+
+Run any example:
+```bash
+python examples/03_embeddings_mmd.py
+```
 
 ## Key Message
 
 "We explored and tested multiple tools for recognizing and mapping weeds at complementary
 scales. None alone solves the problem. Together, they form a toolkit for decision-making
-under climate variability — and we put this repository into the community's hands."
+under climate variability -- and we put this repository into the community's hands."
 
 ## Three-Act Structure
 
-- **Act I — Field Detection**: YOLO + SAHI detection → geostatistical mapping → management zones
-- **Act II — Domain Generalization**: Cross-domain evaluation, MMD gates, multi-domain recovery
-- **Act III — Satellite Integration**: PRESTO embeddings, NDVI correlation, GWR, LISA clusters
+- **Act I -- Field Detection**: YOLO + SAHI detection -> geostatistical mapping -> management zones
+- **Act II -- Domain Generalization**: Cross-domain evaluation, MMD gates, multi-domain recovery
+- **Act III -- Satellite Integration**: PRESTO embeddings, NDVI correlation, GWR, LISA clusters
 
 ## Key Results (Verified)
 
 | Metric | Value | Source |
 |--------|-------|--------|
 | Best mAP50 (AMBEL detection) | 0.886 | Training Run 3 |
-| Cross-domain collapse (CL→INTL) | mAP50 = 0.108 | Phase 1 |
+| Cross-domain collapse (CL->INTL) | mAP50 = 0.108 | Phase 1 |
 | Multi-domain recovery | mAP50 = 0.874 | Phase 2 |
-| NDVI–AMBEL correlation | r = 0.837 | Single-date Sept 24 |
-| NDVI–LENCU correlation | r = 0.890 | Single-date Sept 24 |
-| PRESTO PC1–AMBEL | r = 0.739 | Jul–Dec 2024 |
-| PRESTO PC1–LENCU | r = 0.717 | Jul–Dec 2024 |
-| Bivariate Moran's I (PC1×AMBEL) | 0.706 (p=0.001) | 999 permutations |
-| GWR R² AMBEL | 0.882 | PC1+PC2+PC3, BW=49nn |
-| GWR R² LENCU | 0.910 | PC1+PC2+PC3, BW=49nn |
-| LISA significant pixels | 68% | PC1×AMBEL |
+| NDVI-AMBEL correlation | r = 0.837 | Single-date Sept 24 |
+| NDVI-LENCU correlation | r = 0.890 | Single-date Sept 24 |
+| PRESTO PC1-AMBEL | r = 0.739 | Jul-Dec 2024 |
+| PRESTO PC1-LENCU | r = 0.717 | Jul-Dec 2024 |
+| Bivariate Moran's I (PC1 x AMBEL) | 0.706 (p=0.001) | 999 permutations |
+| GWR R-squared AMBEL | 0.882 | PC1+PC2+PC3, BW=49nn |
+| GWR R-squared LENCU | 0.910 | PC1+PC2+PC3, BW=49nn |
+| LISA significant pixels | 68% | PC1 x AMBEL |
 
 ## Editorial Rules (MANDATORY for all text output)
 
@@ -45,31 +135,26 @@ under climate variability — and we put this repository into the community's ha
 - **Species names**: Always italics: *Ambrosia artemisiifolia*, *Convolvulus arvensis*
 - **Headings**: Decimal numbering (1, 1.1, 1.1.1). Cross-references by number: "see Sect. 1.2"
 - **Abbreviations**: Define at first use (YOLO, SAHI, UAV, DSS, PRESTO, NDVI, LISA, mAP, GWR, OLS, MMD)
-- **Figures**: Fig. N.1, Fig. N.2 (N = chapter number). Captions at end of text file. Separate files named León-FigN.n
+- **Figures**: Fig. N.1, Fig. N.2 (N = chapter number). Captions at end of text file.
 - **Tables**: Table N.1, Table N.2. Built in LaTeX, not as images.
-- **Figure specs**: 78 mm or 117 mm wide; ≤198 mm height; Helvetica/Arial 8–12 pt; ≥300 dpi photos; ≥1200 dpi diagrams; RGB; legible in grayscale
-- **References**: End of chapter, alphabetical. DOIs as https://doi.org/xxxxx. Journal names in full.
 
 ## File Locations
 
 | What | Where |
 |------|-------|
-| Chapter LaTeX | `chapter/main.tex` |
-| Figures | `chapter/figures/` |
-| Tables | `chapter/tables/` |
+| Package source | `src/ragweed_toolkit/` |
+| Tests | `tests/` |
+| Examples | `examples/` |
+| Chapter LaTeX | `research_docs/lencu_book_chapter/chapter/main.tex` |
+| Figures | `research_docs/lencu_book_chapter/chapter/figures/` |
 | Evidence docs | `evidence/` |
-| Tool scripts | `tools/` |
 | Configs | `configs/` |
 | Data pointers | `data/README.md` |
 | Narrative roadmap | `docs/CHAPTER_STORYLINE.md` |
-| Curation report | `docs/EVIDENCE_CURATION_REPORT.md` |
-| Full project context | `docs/DLM6_PROJECT_CONTEXT.md` |
 
-## Workflow
+## Session History
 
-1. Read `docs/CHAPTER_STORYLINE.md` for the three-act narrative and figure plan
-2. Read `docs/EVIDENCE_CURATION_REPORT.md` for per-exercise best evidence
-3. Read `docs/DLM6_PROJECT_CONTEXT.md` for verified numbers and scientific foundation
-4. Write LaTeX sections following the three-act structure
-5. All figures referenced must exist in `chapter/figures/`
-6. Lorenzo reviews LaTeX via the Claude project on claude.ai
+| Session | Date | Focus |
+|---------|------|-------|
+| 1 | 2026-02-26 | Scaffold package, implement all 8 modules (detection, embeddings, geostatistics, spatial, satellite, crossdomain, orthomosaic, viz) |
+| 2 | 2026-02-26 | Viz module implementation, pytest test suite, example scripts, CLAUDE.md update |
