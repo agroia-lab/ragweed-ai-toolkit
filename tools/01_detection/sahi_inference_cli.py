@@ -30,6 +30,9 @@ from ultralytics import YOLO
 from sahi import AutoDetectionModel
 from sahi.predict import get_sliced_prediction
 
+# ragweed_toolkit library imports
+from ragweed_toolkit.detection import SahiConfig, run_sahi
+
 
 # Default class colors (RGB) - extended palette for any number of classes
 DEFAULT_COLORS = [
@@ -257,34 +260,17 @@ def run_sahi_inference(
     overlap_ratio: float,
     confidence_threshold: float
 ) -> List[Dict]:
-    """Run SAHI sliced inference on a single image."""
-    # NOTE: detection_model is created once and reused for all images.
-    # We still set confidence_threshold here to ensure per-run consistency.
-    detection_model.confidence_threshold = confidence_threshold
+    """Run SAHI sliced inference on a single image.
 
-    # Run sliced prediction
-    result = get_sliced_prediction(
-        str(image_path),
-        detection_model,
-        slice_height=slice_size,
-        slice_width=slice_size,
-        overlap_height_ratio=overlap_ratio,
-        overlap_width_ratio=overlap_ratio,
-        verbose=0
+    Delegates to ragweed_toolkit.detection.run_sahi() for the core inference,
+    reusing the pre-loaded SAHI model for efficiency.
+    """
+    cfg = SahiConfig(
+        slice_size=slice_size,
+        overlap_ratio=overlap_ratio,
+        confidence_threshold=confidence_threshold,
     )
-
-    # Convert to our format
-    detections = []
-    for pred in result.object_prediction_list:
-        bbox = pred.bbox.to_xyxy()
-        detections.append({
-            'class_id': pred.category.id,
-            'class_name': pred.category.name,
-            'bbox': [float(c) for c in bbox],
-            'confidence': float(pred.score.value)
-        })
-
-    return detections
+    return run_sahi(image_path, cfg, _sahi_model=detection_model)
 
 
 def run_direct_inference(

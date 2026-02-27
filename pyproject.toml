@@ -86,6 +86,16 @@ dev = [
     "pre-commit>=3.0",
 ]
 
+[project.scripts]
+ragweed-train = "ragweed_toolkit.detection.trainer:main"
+ragweed-sahi = "ragweed_toolkit.detection.inference:main"
+ragweed-embed = "ragweed_toolkit.embeddings.extractor:main"
+ragweed-mmd = "ragweed_toolkit.embeddings.mmd:main"
+ragweed-tile = "ragweed_toolkit.orthomosaic.tiling:main"
+ragweed-kriging = "ragweed_toolkit.geostatistics.kriging:main"
+ragweed-lisa = "ragweed_toolkit.spatial.lisa:main"
+ragweed-indices = "ragweed_toolkit.satellite.indices:main"
+
 [project.urls]
 Homepage = "https://github.com/agroia-lab/ragweed-ai-toolkit"
 Documentation = "https://github.com/agroia-lab/ragweed-ai-toolkit#readme"

@@ -17,8 +17,8 @@ separate Claude Code window.
 |---------|-------|------------|--------|
 | 1 | Package scaffold + 7 core modules | — | DONE |
 | 2 | Viz module + unit tests + examples + CLAUDE.md | S1 | DONE |
-| 3 | Refactor tools/ to import from package | S2 | PENDING |
-| 4 | CLI entry points + notebook tutorials | S3 | PENDING |
+| 3 | Refactor tools/ to import from package | S2 | DONE |
+| 4 | CLI entry points + notebook tutorials | S3 | DONE |
 | 5 | GitHub setup + CI/CD + docs site | S4 | PENDING |
 | 6 | Integration testing with real data | S5 | PENDING |
 
@@ -75,30 +75,20 @@ library API works end-to-end.
 
 ---
 
-## Session 4 — CLI Entry Points + Notebook Tutorials
+## Session 4 — CLI Entry Points + Notebook Tutorials (DONE)
 
-**Goal:** Add proper CLI entry points via pyproject.toml console_scripts so
-users can run `ragweed-train`, `ragweed-sahi`, etc. Create Jupyter notebook
-tutorials for each major workflow.
+**Completed 2026-02-27**
 
-**Scope:**
-1. Add [project.scripts] to pyproject.toml:
-   - `ragweed-train` → ragweed_toolkit.detection.trainer:main
-   - `ragweed-sahi` → ragweed_toolkit.detection.inference:main
-   - `ragweed-embed` → ragweed_toolkit.embeddings.extractor:main
-   - `ragweed-mmd` → ragweed_toolkit.embeddings.mmd:main
-   - `ragweed-tile` → ragweed_toolkit.orthomosaic.tiling:main
-   - `ragweed-kriging` → ragweed_toolkit.geostatistics.kriging:main
-   - `ragweed-lisa` → ragweed_toolkit.spatial.lisa:main
-2. Add main() functions with argparse to each target module
-3. Create notebooks/:
-   - 01_detection_workflow.ipynb (train → infer → GPS → shapefile)
-   - 02_crossdomain_analysis.ipynb (embeddings → MMD → deployment gates)
-   - 03_spatial_mapping.ipynb (kriging → LISA → GWR)
-   - 04_satellite_integration.ipynb (PRESTO → indices → risk zones)
-4. Create conda environment.yml for reproducible setup
-
-**Agent team:** 2 agents (CLI entry points, notebooks)
+- 8 CLI entry points via `[project.scripts]` in pyproject.toml
+- `main()` functions with argparse in all 8 target modules
+- 4 Jupyter notebook tutorials with synthetic data:
+  - 01_detection_workflow.ipynb (14KB)
+  - 02_crossdomain_analysis.ipynb (11KB)
+  - 03_spatial_mapping.ipynb (16KB)
+  - 04_satellite_integration.ipynb (17KB)
+- environment.yml for conda reproducible setup
+- Fixed lazy imports for ultralytics (optional dependency)
+- All 8 commands verified: `ragweed-{train,sahi,embed,mmd,tile,kriging,lisa,indices} --help`
 
 ---
 

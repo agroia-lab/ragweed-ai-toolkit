@@ -47,18 +47,15 @@ import numpy as np
 import pandas as pd
 from PIL import Image
 
-# Add project root to path so we can import from scripts/image_embeddings/
-sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-
 import torch
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
 
-# Import reusable components from the existing embeddings module
-from scripts.image_embeddings.generate_embeddings import (
+from ragweed_toolkit.embeddings import (
     FeatureExtractor,
     extract_embeddings,
-    reduce_dimensions,
+    default_transform,
+    reduce_embeddings,
 )
 
 # Suppress warnings for cleaner output
@@ -444,14 +441,7 @@ def main():
     print("[1/4] Load tiles")
     print("-" * 70)
 
-    transform = transforms.Compose([
-        transforms.Resize((224, 224)),
-        transforms.ToTensor(),
-        transforms.Normalize(
-            mean=[0.485, 0.456, 0.406],
-            std=[0.229, 0.224, 0.225],
-        ),
-    ])
+    transform = default_transform(image_size=224)
 
     dataset = TileDataset(
         tiles_dir=str(tiles_dir),
@@ -478,7 +468,7 @@ def main():
     print(f"  Embedding dimension: {model.embedding_dim}")
 
     embeddings = extract_embeddings(
-        dataset=dataset,
+        images=dataset,
         model=model,
         batch_size=args.batch_size,
         num_workers=4,
@@ -499,10 +489,19 @@ def main():
     print("[3/4] Reduce dimensions")
     print("-" * 70)
 
+    def _reduce(emb, method, n_components=2):
+        """Thin wrapper: reduce_embeddings returns DataFrame, extract numpy."""
+        df_r = reduce_embeddings(emb, method=method, n_components=n_components)
+        prefix = method.lower()
+        cols = [f"{prefix}_x", f"{prefix}_y"]
+        if n_components >= 3:
+            cols.append(f"{prefix}_z")
+        return df_r[cols].values
+
     # UMAP 2D
     print("\n  [a] UMAP 2D...")
     try:
-        umap_2d = reduce_dimensions(embeddings, method="umap", n_components=2)
+        umap_2d = _reduce(embeddings, "umap", 2)
     except ImportError:
         print(
             "\n  ERROR: umap-learn is not installed."
@@ -513,13 +512,13 @@ def main():
 
     # PCA 2D
     print("\n  [b] PCA 2D...")
-    pca_2d = reduce_dimensions(embeddings, method="pca", n_components=2)
+    pca_2d = _reduce(embeddings, "pca", 2)
 
     # t-SNE 2D (optional)
     tsne_2d = None
     if not args.skip_tsne:
         print("\n  [c] t-SNE 2D...")
-        tsne_2d = reduce_dimensions(embeddings, method="tsne", n_components=2)
+        tsne_2d = _reduce(embeddings, "tsne", 2)
     else:
         print("\n  [c] t-SNE 2D... SKIPPED (--skip-tsne)")
 

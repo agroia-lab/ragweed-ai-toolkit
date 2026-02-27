@@ -37,6 +37,11 @@ import geopandas as gpd
 import pandas as pd
 import numpy as np
 
+from ragweed_toolkit.spatial import LISA_COLORS, QUADRANT_MAP
+
+# Mapping from pygeoda cluster codes to ragweed_toolkit LISA_COLORS keys.
+# pygeoda: 0=NS, 1=HH, 2=LL, 3=LH, 4=HL
+_PYGEODA_TO_LISA_KEY = {0: "NS", 1: "HH", 2: "LL", 3: "LH", 4: "HL"}
 
 # LISA cluster labels
 CLUSTER_LABELS = {
@@ -57,6 +62,8 @@ def find_orara_column(gdf: gpd.GeoDataFrame) -> Optional[str]:
     return None
 
 
+# TODO: Replace with ragweed_toolkit.spatial.compute_bivariate_lisa when it
+# supports univariate mode + pygeoda KNN weights (currently esda + DistanceBand only)
 def run_lisa(gdf: gpd.GeoDataFrame, orara_col: str, k: int = 8) -> gpd.GeoDataFrame:
     """
     Run LISA analysis on a GeoDataFrame.
@@ -118,8 +125,10 @@ def print_lisa_summary(gdf: gpd.GeoDataFrame, orara_col: str, title: str = ""):
         mean_orara = subset[orara_col].mean()
         sum_orara = subset[orara_col].sum()
         label = CLUSTER_LABELS.get(cluster_code, f'Type {cluster_code}')
+        lisa_key = _PYGEODA_TO_LISA_KEY.get(cluster_code, "NS")
+        color = LISA_COLORS.get(lisa_key, "#cccccc")
 
-        print(f"\n{label}:")
+        print(f"\n{label} [{color}]:")
         print(f"  Points: {count} ({pct:.1f}%)")
         print(f"  Mean ORARA: {mean_orara:.1f}")
         print(f"  Total ORARA: {sum_orara:,}")
@@ -348,11 +357,11 @@ LAYER_PATH = "{output_path}"
 LAYER_NAME = "{layer_name}"
 
 CLUSTERS = {{
-    0: {{"label": "Not Significant", "color": "#CCCCCC", "size": 2.5}},
-    1: {{"label": "Hot Spot (High-High)", "color": "#E74C3C", "size": 4.0}},
-    2: {{"label": "Cold Spot (Low-Low)", "color": "#3498DB", "size": 3.5}},
-    3: {{"label": "Low-High Outlier", "color": "#9B59B6", "size": 3.0}},
-    4: {{"label": "High-Low Outlier", "color": "#E67E22", "size": 3.5}},
+    0: {{"label": "Not Significant", "color": "{LISA_COLORS['NS']}", "size": 2.5}},
+    1: {{"label": "Hot Spot (High-High)", "color": "{LISA_COLORS['HH']}", "size": 4.0}},
+    2: {{"label": "Cold Spot (Low-Low)", "color": "{LISA_COLORS['LL']}", "size": 3.5}},
+    3: {{"label": "Low-High Outlier", "color": "{LISA_COLORS['LH']}", "size": 3.0}},
+    4: {{"label": "High-Low Outlier", "color": "{LISA_COLORS['HL']}", "size": 3.5}},
 }}
 
 # Check if layer exists

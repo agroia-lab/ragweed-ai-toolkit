@@ -26,7 +26,10 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence, Union
 
-from ultralytics import YOLO
+try:
+    from ultralytics import YOLO
+except ImportError:
+    YOLO = None  # Optional dependency; checked at runtime in run_sahi()
 
 
 @dataclass
@@ -163,3 +166,63 @@ def run_sahi_batch(
             print(f"  {len(dets)} detections")
 
     return results
+
+
+def main():
+    """CLI entry point for SAHI sliced inference."""
+    import argparse
+    import json as _json
+
+    parser = argparse.ArgumentParser(
+        description="Run SAHI sliced inference on images with a YOLO model."
+    )
+    parser.add_argument("--model", required=True, help="Path to trained YOLO .pt checkpoint")
+    parser.add_argument("--images", required=True, nargs="+", help="Image file(s) or directory")
+    parser.add_argument("--slice-size", type=int, default=640, help="Slice size in pixels (default: 640)")
+    parser.add_argument("--overlap", type=float, default=0.2, help="Overlap ratio (default: 0.2)")
+    parser.add_argument("--conf", type=float, default=0.25, help="Confidence threshold (default: 0.25)")
+    parser.add_argument("--device", default="cuda:0", help="Device (default: cuda:0)")
+    parser.add_argument("--output", default=None, help="Save results JSON to this path")
+    args = parser.parse_args()
+
+    # Expand directories into image lists
+    image_paths = []
+    for img_arg in args.images:
+        p = Path(img_arg)
+        if p.is_dir():
+            for ext in ("*.jpg", "*.jpeg", "*.png", "*.tif", "*.tiff"):
+                image_paths.extend(sorted(p.glob(ext)))
+                image_paths.extend(sorted(p.glob(ext.upper())))
+        elif p.is_file():
+            image_paths.append(p)
+        else:
+            print(f"Warning: {img_arg} not found, skipping")
+
+    if not image_paths:
+        print("No images found.")
+        return
+
+    cfg = SahiConfig(
+        model_path=args.model,
+        slice_size=args.slice_size,
+        overlap_ratio=args.overlap,
+        confidence_threshold=args.conf,
+        device=args.device,
+    )
+
+    print(f"SAHI inference: {len(image_paths)} images, slice={cfg.slice_size}, conf={cfg.confidence_threshold}")
+    results = run_sahi_batch(image_paths, cfg)
+
+    total_dets = sum(len(dets) for dets in results.values())
+    print(f"\nTotal: {total_dets} detections across {len(results)} images")
+
+    if args.output:
+        out_path = Path(args.output)
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(out_path, "w") as f:
+            _json.dump(results, f, indent=2)
+        print(f"Results saved to {out_path}")
+
+
+if __name__ == "__main__":
+    main()

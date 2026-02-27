@@ -117,6 +117,9 @@ def compute_spectral_indices(
     return result
 
 
+ALL_INDEX_NAMES = list(INDEX_DESCRIPTIONS.keys())
+
+
 def compute_spectral_indices_ee(image):
     """Compute spectral indices as Earth Engine bands.
 
@@ -161,3 +164,52 @@ def compute_spectral_indices_ee(image):
         .addBands(s2wi).addBands(nbr2).addBands(bsi)
         .addBands(clay).addBands(swird)
     )
+
+
+def main():
+    """CLI entry point for computing spectral indices from a 10-band GeoTIFF."""
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description="Compute spectral indices from a 10-band Sentinel-2 GeoTIFF."
+    )
+    parser.add_argument("--input", required=True, help="Input 10-band GeoTIFF (B2-B12)")
+    parser.add_argument("--output-dir", required=True, help="Output directory for index GeoTIFFs")
+    parser.add_argument("--indices", nargs="+", default=None,
+                        choices=ALL_INDEX_NAMES,
+                        help=f"Indices to compute (default: all). Choices: {', '.join(ALL_INDEX_NAMES)}")
+    args = parser.parse_args()
+
+    import rasterio
+    from pathlib import Path
+
+    with rasterio.open(args.input) as src:
+        spectral = src.read()
+        profile = src.profile.copy()
+        print(f"Input: {args.input}")
+        print(f"  Shape: {spectral.shape}, CRS: {src.crs}")
+
+    if spectral.shape[0] != 10:
+        print(f"Error: Expected 10 bands, got {spectral.shape[0]}")
+        return
+
+    indices_to_compute = args.indices or ALL_INDEX_NAMES
+    results = compute_spectral_indices(spectral, indices=indices_to_compute)
+
+    out_dir = Path(args.output_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    profile.update(count=1, dtype="float32")
+
+    for name, arr in results.items():
+        out_path = out_dir / f"{name}.tif"
+        with rasterio.open(str(out_path), "w", **profile) as dst:
+            dst.write(arr.astype(np.float32), 1)
+        vmin, vmax = np.nanmin(arr), np.nanmax(arr)
+        print(f"  {name}: [{vmin:.4f}, {vmax:.4f}] -> {out_path.name}")
+
+    print(f"\n{len(results)} indices saved to {out_dir}")
+
+
+if __name__ == "__main__":
+    main()

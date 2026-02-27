@@ -28,6 +28,28 @@ from esda.moran import Moran_BV, Moran_Local_BV
 warnings.filterwarnings("ignore", category=FutureWarning)
 warnings.filterwarnings("ignore", category=UserWarning)
 
+# ---- Portable path resolution ----
+from pathlib import Path
+_script_dir = Path(__file__).resolve().parent
+_project_root = _script_dir.parent.parent
+sys.path.insert(0, str(_project_root))
+sys.path.insert(0, str(_project_root / "src"))
+
+# --- Library imports (replacing internal duplicates) ---
+from ragweed_toolkit.spatial import (
+    LISA_COLORS,
+    QUADRANT_MAP,
+    compute_cross_variogram as _lib_compute_cross_variogram,
+)
+# Note: build_distance_weights in the library takes a GeoDataFrame, while
+# this script's build_weights takes a DataFrame with x/y columns directly.
+# Keeping the script-specific version for backward compatibility.
+
+# Note: bivariate_global_moran uses esda's Moran_BV directly (similar to
+# library's compute_bivariate_morans, but the library version takes a
+# GeoDataFrame + column names and returns BivariateMoranResult dataclass).
+# Keeping script-specific version since it processes multiple pairs at once.
+
 # ---------------------------------------------------------------------------
 # Paths
 # ---------------------------------------------------------------------------
@@ -103,18 +125,8 @@ def bivariate_global_moran(df, w):
 # ---------------------------------------------------------------------------
 # 3. Bivariate Local LISA
 # ---------------------------------------------------------------------------
-LISA_COLORS = {
-    "HH": "#e74c3c",   # red
-    "LH": "#9b59b6",   # purple
-    "LL": "#3498db",   # blue
-    "HL": "#e67e22",   # orange
-    "NS": "#d5d5d5",   # light gray
-}
-
-QUADRANT_MAP = {1: "HH", 2: "LH", 3: "LL", 4: "HL"}
-
-
 def bivariate_local_lisa(df, w):
+    """Compute bivariate local LISA using library constants for colors/quadrants."""
     print("\n" + "=" * 70)
     print("BIVARIATE LOCAL LISA")
     print("=" * 70)
@@ -190,40 +202,10 @@ def bivariate_local_lisa(df, w):
 
 
 # ---------------------------------------------------------------------------
-# 4. Cross-variogram (manual computation)
+# 4. Cross-variogram (uses library function)
 # ---------------------------------------------------------------------------
-def compute_cross_variogram(coords, z1, z2, n_lags=15, maxlag=None):
-    """
-    Cross-semivariogram:
-      gamma(h) = 1/(2*N(h)) * sum[ (z1(i)-z1(j)) * (z2(i)-z2(j)) ]
-    for all pairs (i,j) within lag bin h.
-    """
-    dist_matrix = squareform(pdist(coords))
-    if maxlag is None:
-        maxlag = np.median(dist_matrix[dist_matrix > 0])
-
-    lag_edges = np.linspace(0, maxlag, n_lags + 1)
-    lag_centers = (lag_edges[:-1] + lag_edges[1:]) / 2
-    gammas = np.full(n_lags, np.nan)
-    counts = np.zeros(n_lags, dtype=int)
-
-    n = len(z1)
-    for k in range(n_lags):
-        lo, hi = lag_edges[k], lag_edges[k + 1]
-        mask = (dist_matrix > lo) & (dist_matrix <= hi)
-        # upper triangle only to avoid double counting
-        mask = np.triu(mask, k=1)
-        idx = np.where(mask)
-        npairs = len(idx[0])
-        counts[k] = npairs
-        if npairs > 0:
-            diffs = (z1[idx[0]] - z1[idx[1]]) * (z2[idx[0]] - z2[idx[1]])
-            gammas[k] = np.sum(diffs) / (2.0 * npairs)
-
-    return lag_centers, gammas, counts
-
-
 def cross_variogram_analysis(df):
+    """Compute cross-variograms using the library's compute_cross_variogram."""
     print("\n" + "=" * 70)
     print("CROSS-VARIOGRAMS")
     print("=" * 70)
@@ -237,26 +219,15 @@ def cross_variogram_analysis(df):
     maxlag = np.median(dist_flat)
     print(f"  Median pairwise distance: {maxlag:.1f}m (used as maxlag)")
 
-    # Cross-variograms
-    lags_ambel, gamma_ambel, cnt_ambel = compute_cross_variogram(coords, pc1, ambel, maxlag=maxlag)
-    lags_lencu, gamma_lencu, cnt_lencu = compute_cross_variogram(coords, pc1, lencu, maxlag=maxlag)
+    # Cross-variograms using library function
+    result_ambel = _lib_compute_cross_variogram(coords, pc1, ambel, max_lag=maxlag)
+    result_lencu = _lib_compute_cross_variogram(coords, pc1, lencu, max_lag=maxlag)
     # Auto-variogram of PC1
-    lags_pc1, gamma_pc1, cnt_pc1 = compute_cross_variogram(coords, pc1, pc1, maxlag=maxlag)
+    result_pc1 = _lib_compute_cross_variogram(coords, pc1, pc1, max_lag=maxlag)
 
-    # Find approximate range (where 90% of sill is reached)
-    def approx_range(lags, gammas):
-        valid = ~np.isnan(gammas)
-        if not valid.any():
-            return np.nan
-        sill = np.nanmax(np.abs(gammas))
-        for i, g in enumerate(gammas):
-            if not np.isnan(g) and np.abs(g) >= 0.9 * sill:
-                return lags[i]
-        return lags[valid][-1]
-
-    range_ambel = approx_range(lags_ambel, gamma_ambel)
-    range_lencu = approx_range(lags_lencu, gamma_lencu)
-    range_pc1 = approx_range(lags_pc1, gamma_pc1)
+    range_ambel = result_ambel.approx_range
+    range_lencu = result_lencu.approx_range
+    range_pc1 = result_pc1.approx_range
 
     print(f"  PC1 auto-variogram approx. range: {range_pc1:.1f}m")
     print(f"  PC1 x AMBEL cross-variogram approx. range: {range_ambel:.1f}m")
@@ -267,10 +238,10 @@ def cross_variogram_analysis(df):
 
     # Left panel: cross-variograms
     ax = axes[0]
-    valid_a = ~np.isnan(gamma_ambel)
-    valid_l = ~np.isnan(gamma_lencu)
-    ax.plot(lags_ambel[valid_a], gamma_ambel[valid_a], "o-", color="#e74c3c", linewidth=2, markersize=6, label="PC1 x AMBEL")
-    ax.plot(lags_lencu[valid_l], gamma_lencu[valid_l], "s-", color="#2ecc71", linewidth=2, markersize=6, label="PC1 x LENCU")
+    valid_a = ~np.isnan(result_ambel.gamma)
+    valid_l = ~np.isnan(result_lencu.gamma)
+    ax.plot(result_ambel.lag_centers[valid_a], result_ambel.gamma[valid_a], "o-", color="#e74c3c", linewidth=2, markersize=6, label="PC1 x AMBEL")
+    ax.plot(result_lencu.lag_centers[valid_l], result_lencu.gamma[valid_l], "s-", color="#2ecc71", linewidth=2, markersize=6, label="PC1 x LENCU")
     ax.axhline(0, color="gray", linewidth=0.8, linestyle="--")
     ax.set_xlabel("Lag distance (m)", fontsize=11)
     ax.set_ylabel("Cross-semivariance", fontsize=11)
@@ -280,8 +251,8 @@ def cross_variogram_analysis(df):
 
     # Right panel: PC1 auto-variogram
     ax2 = axes[1]
-    valid_p = ~np.isnan(gamma_pc1)
-    ax2.plot(lags_pc1[valid_p], gamma_pc1[valid_p], "D-", color="#3498db", linewidth=2, markersize=6, label="PC1 auto-variogram")
+    valid_p = ~np.isnan(result_pc1.gamma)
+    ax2.plot(result_pc1.lag_centers[valid_p], result_pc1.gamma[valid_p], "D-", color="#3498db", linewidth=2, markersize=6, label="PC1 auto-variogram")
     ax2.set_xlabel("Lag distance (m)", fontsize=11)
     ax2.set_ylabel("Semivariance", fontsize=11)
     ax2.set_title("PC1 Auto-variogram (reference)", fontsize=13, fontweight="bold")

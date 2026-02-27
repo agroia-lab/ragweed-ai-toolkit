@@ -32,7 +32,10 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Optional, Union
 
-from ultralytics import YOLO
+try:
+    from ultralytics import YOLO
+except ImportError:
+    YOLO = None  # Optional dependency; checked at runtime in train()
 
 
 @dataclass
@@ -214,3 +217,60 @@ def train(
         "training_time_s": elapsed,
         "config": asdict(config),
     }
+
+
+def main():
+    """CLI entry point for YOLO training."""
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description="Train a YOLO model with validated hyperparameters (Table 3)."
+    )
+    parser.add_argument("--data", required=True, help="Path to dataset YAML file")
+    parser.add_argument("--model", default="yolo11l.pt", help="Pretrained checkpoint (default: yolo11l.pt)")
+    parser.add_argument("--epochs", type=int, default=50, help="Max training epochs (default: 50)")
+    parser.add_argument("--imgsz", type=int, default=640, help="Input image size (default: 640)")
+    parser.add_argument("--batch", type=int, default=64, help="Batch size (default: 64)")
+    parser.add_argument("--device", default="0", help="CUDA device, e.g. '0', '0,1', 'cpu' (default: 0)")
+    parser.add_argument("--optimizer", default="SGD", help="Optimizer: SGD, Adam, auto (default: SGD)")
+    parser.add_argument("--lr0", type=float, default=0.01, help="Initial learning rate (default: 0.01)")
+    parser.add_argument("--patience", type=int, default=15, help="Early stopping patience (default: 15)")
+    parser.add_argument("--project", default="training_results", help="Output directory (default: training_results)")
+    parser.add_argument("--name", default="", help="Run name prefix")
+    parser.add_argument("--seed", type=int, default=42, help="Random seed (default: 42)")
+    parser.add_argument("--workers", type=int, default=8, help="DataLoader workers (default: 8)")
+    parser.add_argument("--no-cache", action="store_true", help="Disable image caching")
+    args = parser.parse_args()
+
+    cfg = TrainingConfig(
+        model=args.model,
+        data=args.data,
+        epochs=args.epochs,
+        imgsz=args.imgsz,
+        batch=args.batch,
+        device=args.device,
+        optimizer=args.optimizer,
+        lr0=args.lr0,
+        patience=args.patience,
+        project=args.project,
+        name=args.name,
+        seed=args.seed,
+        workers=args.workers,
+        cache=not args.no_cache,
+    )
+
+    print(f"Starting training: {cfg.model} on {cfg.data}")
+    print(f"  epochs={cfg.epochs}, imgsz={cfg.imgsz}, batch={cfg.batch}, device={cfg.device}")
+    results = train(cfg)
+
+    print(f"\nTraining complete in {results['training_time_s']:.1f}s")
+    print(f"  Output: {results['output_dir']}")
+    print(f"  Best weights: {results['best_weights']}")
+    if results["metrics"]:
+        for k, v in results["metrics"].items():
+            if isinstance(v, float):
+                print(f"  {k}: {v:.4f}")
+
+
+if __name__ == "__main__":
+    main()

@@ -18,60 +18,51 @@ Outputs:
 
 Usage:
     # From pre-saved detections (fastest)
-    python scripts/cli/mine_uncertain_samples.py \\
+    python tools/04_orthomosaic/mine_uncertain_samples.py \\
         --detections outputs/sahi_inference_1024px_*/detections.json \\
         --top 50 --output outputs/active_learning/run1
 
     # From new images (runs inference internally)
-    python scripts/cli/mine_uncertain_samples.py \\
+    python tools/04_orthomosaic/mine_uncertain_samples.py \\
         --images /path/to/new/campo/images \\
         --model training_results/v4_4140tiles/run_20260118_132318/weights/best.pt \\
         --top 30 --output outputs/active_learning/run2
 
     # From existing SAHI output (re-runs inference to get confidences)
-    python scripts/cli/mine_uncertain_samples.py \\
+    python tools/04_orthomosaic/mine_uncertain_samples.py \\
         --sahi-output outputs/sahi_inference_1024px_20260210 \\
         --top 20 --output outputs/active_learning/run3
-
-    # With CLIP distribution shift scoring
-    python scripts/cli/mine_uncertain_samples.py \\
-        --detections outputs/test/detections.json \\
-        --reference-data configs/yaml_config/data_tomate-orobanche-v4-4488tiles.yaml \\
-        --top 50 --output outputs/active_learning/run4
 """
 
 import argparse
 import json
-import os
 import sys
 import time
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
-import cv2
 import numpy as np
 import pandas as pd
 import yaml
 
-# Project root
-PROJECT_ROOT = Path(__file__).parent.parent.parent
-sys.path.insert(0, str(PROJECT_ROOT))
-
-from scripts.active_learning.uncertainty_scorer import (
-    compute_composite_score,
-    compute_dataset_stats,
-    score_borderline_density,
-    score_class_ambiguity_proxy,
-    score_confidence_entropy,
-    score_distribution_shift,
-    score_low_confidence,
+from ragweed_toolkit.orthomosaic import (
+    export_uncertain_panels,
+    export_yolo_labels,
+    generate_uncertainty_report,
+    score_images,
 )
 
 
-# ─── Configuration ───────────────────────────────────────────────────────────
+# ============================================================================
+# Configuration
+# ============================================================================
 
-def load_config() -> Dict:
+# TODO: Move config loading to ragweed_toolkit when API supports project-specific configs
+PROJECT_ROOT = Path(__file__).parent.parent.parent
+
+
+def load_config() -> Tuple[Dict, Dict]:
     """Load active learning config from sugal_orobanche_config.yaml."""
     config_path = PROJECT_ROOT / 'configs' / 'sugal_orobanche_config.yaml'
     if config_path.exists():
@@ -81,7 +72,10 @@ def load_config() -> Dict:
     return {}, {}
 
 
-# ─── Data Loading ────────────────────────────────────────────────────────────
+# ============================================================================
+# Data Loading
+# ============================================================================
+
 
 def load_detections_json(detections_path: str) -> Tuple[Dict, Dict]:
     """Load detections from a pre-saved detections.json file.
@@ -110,13 +104,11 @@ def load_from_sahi_output(sahi_dir: str) -> Tuple[Dict, Dict]:
     """
     sahi_path = Path(sahi_dir)
 
-    # Look for detections.json (has per-detection confidence)
     det_path = sahi_path / 'detections.json'
     if det_path.exists():
         print(f"Found detections.json in {sahi_path.name}")
         return load_detections_json(str(det_path))
 
-    # Fallback: summary.json (only has counts, no confidences)
     summary_path = sahi_path / 'summary.json'
     if summary_path.exists():
         print(f"WARNING: Only summary.json found in {sahi_path.name}")
@@ -135,11 +127,9 @@ def load_from_sahi_output(sahi_dir: str) -> Tuple[Dict, Dict]:
             'limited': True,
         }
 
-        # Build images_data from per_image_results (no actual detections)
         images_data = {}
         for result in summary.get('per_image_results', []):
             name = result['image']
-            # Create fake detections with no confidence (just counts)
             images_data[name] = {
                 'detections': [],
                 'sahi_total': result.get('sahi_total', 0),
@@ -152,6 +142,7 @@ def load_from_sahi_output(sahi_dir: str) -> Tuple[Dict, Dict]:
     )
 
 
+# TODO: Move SAHI inference runner to ragweed_toolkit.detection when API supports it
 def run_inference_and_collect(
     images_dir: str,
     model_path: str,
@@ -160,10 +151,7 @@ def run_inference_and_collect(
     confidence: float,
     device: str,
 ) -> Tuple[Dict, Dict]:
-    """Run SAHI inference on images and return per-detection data.
-
-    Returns same format as load_detections_json.
-    """
+    """Run SAHI inference on images and return per-detection data."""
     from PIL import Image as PILImage
 
     from sahi import AutoDetectionModel
@@ -180,7 +168,6 @@ def run_inference_and_collect(
     print(f"  Model: {model_path}")
     print(f"  Slice: {slice_size}px, Conf: {confidence}")
 
-    # Load model once
     sahi_model = AutoDetectionModel.from_pretrained(
         model_type="yolov8",
         model_path=model_path,
@@ -194,7 +181,6 @@ def run_inference_and_collect(
     t0 = time.perf_counter()
 
     for idx, img_path in enumerate(image_files):
-        # Get dimensions cheaply
         with PILImage.open(img_path) as im:
             w, h = im.size
 
@@ -239,268 +225,11 @@ def run_inference_and_collect(
     return images_data, metadata
 
 
-# ─── Scoring ─────────────────────────────────────────────────────────────────
+# ============================================================================
+# FiftyOne Integration (CLI-specific, not in library)
+# ============================================================================
 
-def score_all_images(
-    images_data: Dict,
-    weights: Dict[str, float],
-    conf_lo: float,
-    conf_hi: float,
-    ambiguous_classes: List[str],
-    reference: Optional[Tuple[np.ndarray, float]] = None,
-    embeddings: Optional[Dict[str, np.ndarray]] = None,
-) -> pd.DataFrame:
-    """Score all images on uncertainty criteria.
-
-    Args:
-        images_data: Dict of image_name -> {detections, width, height}.
-        weights: Scoring weights per criterion.
-        conf_lo: Lower confidence threshold.
-        conf_hi: Upper uncertain zone boundary.
-        ambiguous_classes: Classes prone to visual confusion.
-        reference: (centroid, std) from training distribution, or None.
-        embeddings: Dict of image_name -> CLIP embedding, or None.
-
-    Returns:
-        DataFrame with one row per image, sorted by composite_score descending.
-    """
-    # Dataset-level stats
-    median_count, mad = compute_dataset_stats(images_data)
-    print(f"Dataset stats: median={median_count:.0f} detections, MAD={mad:.1f}")
-
-    has_reference = reference is not None and embeddings is not None
-    if not has_reference:
-        print("No CLIP reference provided - skipping distribution_shift criterion")
-
-    rows = []
-    for img_name, img_data in images_data.items():
-        dets = img_data.get('detections', [])
-        n_dets = len(dets)
-
-        # Compute individual scores
-        s_low = score_low_confidence(dets, lo=conf_lo, hi=conf_hi) if dets else 0.0
-        s_entropy = score_confidence_entropy(dets) if dets else 0.0
-        s_density = score_borderline_density(n_dets, median_count, mad)
-        s_ambig = score_class_ambiguity_proxy(dets, ambiguous_classes, threshold=conf_hi) if dets else 0.0
-
-        s_shift = None
-        if has_reference and img_name in embeddings:
-            centroid, std = reference
-            s_shift = score_distribution_shift(embeddings[img_name], centroid, std)
-
-        scores = {
-            'low_confidence': s_low,
-            'confidence_entropy': s_entropy,
-            'borderline_density': s_density,
-            'class_ambiguity': s_ambig,
-        }
-        if s_shift is not None:
-            scores['distribution_shift'] = s_shift
-
-        composite = compute_composite_score(scores, weights)
-
-        row = {
-            'image': img_name,
-            'n_detections': n_dets,
-            'composite_score': composite,
-            'low_confidence': s_low,
-            'confidence_entropy': s_entropy,
-            'borderline_density': s_density,
-            'class_ambiguity': s_ambig,
-        }
-        if s_shift is not None:
-            row['distribution_shift'] = s_shift
-
-        # Add mean/min confidence for diagnostics
-        if dets:
-            confs = [d['confidence'] for d in dets]
-            row['mean_confidence'] = np.mean(confs)
-            row['min_confidence'] = np.min(confs)
-        else:
-            row['mean_confidence'] = None
-            row['min_confidence'] = None
-
-        rows.append(row)
-
-    df = pd.DataFrame(rows)
-    df = df.sort_values('composite_score', ascending=False).reset_index(drop=True)
-    df['rank'] = df.index + 1
-
-    return df
-
-
-# ─── Output Generation ──────────────────────────────────────────────────────
-
-def generate_uncertainty_panels(
-    top_images: pd.DataFrame,
-    images_data: Dict,
-    images_dir: Optional[str],
-    output_dir: Path,
-    conf_hi: float,
-    panel_colors: Dict,
-):
-    """Generate annotated panels for top uncertain images.
-
-    Boxes are color-coded by confidence: red (low), orange (medium), green (high).
-    """
-    panels_dir = output_dir / 'uncertain_panels'
-    panels_dir.mkdir(parents=True, exist_ok=True)
-
-    # Parse panel colors
-    color_low = tuple(panel_colors.get('low', [255, 0, 0]))
-    color_med = tuple(panel_colors.get('medium', [255, 165, 0]))
-    color_high = tuple(panel_colors.get('high', [0, 200, 0]))
-
-    generated = 0
-    for _, row in top_images.iterrows():
-        img_name = row['image']
-        img_data = images_data.get(img_name, {})
-        dets = img_data.get('detections', [])
-
-        # Find the image file
-        img_path = _find_image(img_name, images_dir)
-        if img_path is None:
-            continue
-
-        image = cv2.imread(str(img_path))
-        if image is None:
-            continue
-
-        overlay = image.copy()
-
-        for det in dets:
-            conf = det['confidence']
-            if conf < conf_hi:
-                color_bgr = (color_low[2], color_low[1], color_low[0])
-            elif conf < 0.70:
-                color_bgr = (color_med[2], color_med[1], color_med[0])
-            else:
-                color_bgr = (color_high[2], color_high[1], color_high[0])
-
-            x1, y1, x2, y2 = [int(c) for c in det['bbox']]
-            cv2.rectangle(overlay, (x1, y1), (x2, y2), color_bgr, -1)
-            cv2.rectangle(image, (x1, y1), (x2, y2), color_bgr, 2)
-
-            label = f"{det['class_name']} {conf:.2f}"
-            (tw, th), _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)
-            cv2.rectangle(image, (x1, y1 - th - 4), (x1 + tw, y1), color_bgr, -1)
-            cv2.putText(image, label, (x1, y1 - 2),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
-
-        # Blend overlay
-        image = cv2.addWeighted(overlay, 0.2, image, 0.8, 0)
-
-        # Title bar
-        rank = int(row['rank'])
-        score = row['composite_score']
-        title = f"#{rank} | {img_name} | score={score:.3f} | dets={len(dets)}"
-        cv2.rectangle(image, (0, 0), (len(title) * 11 + 20, 30), (0, 0, 0), -1)
-        cv2.putText(image, title, (10, 22),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 1)
-
-        panel_path = panels_dir / f"rank{rank:03d}_{img_name}"
-        cv2.imwrite(str(panel_path), image)
-        generated += 1
-
-    print(f"Generated {generated} uncertainty panels in {panels_dir}")
-
-
-def export_yolo_labels(
-    top_images: pd.DataFrame,
-    images_data: Dict,
-    images_dir: Optional[str],
-    output_dir: Path,
-):
-    """Export top-N images + YOLO labels for re-annotation tools."""
-    export_dir = output_dir / 'uncertain_yolo_export'
-    images_out = export_dir / 'images'
-    labels_out = export_dir / 'labels'
-    images_out.mkdir(parents=True, exist_ok=True)
-    labels_out.mkdir(parents=True, exist_ok=True)
-
-    exported = 0
-    for _, row in top_images.iterrows():
-        img_name = row['image']
-        img_data = images_data.get(img_name, {})
-        dets = img_data.get('detections', [])
-
-        # Copy image
-        img_path = _find_image(img_name, images_dir)
-        if img_path is None:
-            continue
-
-        import shutil
-        shutil.copy2(str(img_path), str(images_out / img_name))
-
-        # Write YOLO label
-        w = img_data.get('width', 1)
-        h = img_data.get('height', 1)
-        stem = Path(img_name).stem
-        label_path = labels_out / f"{stem}.txt"
-
-        with open(label_path, 'w') as f:
-            for det in dets:
-                x1, y1, x2, y2 = det['bbox']
-                x_center = ((x1 + x2) / 2) / w
-                y_center = ((y1 + y2) / 2) / h
-                bw = (x2 - x1) / w
-                bh = (y2 - y1) / h
-                f.write(f"{det['class_id']} {x_center:.6f} {y_center:.6f} {bw:.6f} {bh:.6f}\n")
-
-        exported += 1
-
-    print(f"Exported {exported} images + labels to {export_dir}")
-
-
-def generate_report(
-    ranking: pd.DataFrame,
-    metadata: Dict,
-    top_n: int,
-    output_dir: Path,
-):
-    """Generate summary report JSON."""
-    n_total = len(ranking)
-    top = ranking.head(top_n)
-
-    report = {
-        'timestamp': datetime.now().isoformat(),
-        'source': metadata.get('source', 'unknown'),
-        'model': metadata.get('model', 'unknown'),
-        'total_images': n_total,
-        'top_n': top_n,
-        'score_distribution': {
-            'mean': float(ranking['composite_score'].mean()),
-            'std': float(ranking['composite_score'].std()),
-            'median': float(ranking['composite_score'].median()),
-            'max': float(ranking['composite_score'].max()),
-            'min': float(ranking['composite_score'].min()),
-            'p90': float(ranking['composite_score'].quantile(0.90)),
-            'p95': float(ranking['composite_score'].quantile(0.95)),
-        },
-        'top_n_stats': {
-            'mean_score': float(top['composite_score'].mean()),
-            'mean_detections': float(top['n_detections'].mean()),
-            'mean_confidence': float(top['mean_confidence'].dropna().mean()) if top['mean_confidence'].notna().any() else None,
-        },
-        'criteria_means': {
-            'low_confidence': float(ranking['low_confidence'].mean()),
-            'confidence_entropy': float(ranking['confidence_entropy'].mean()),
-            'borderline_density': float(ranking['borderline_density'].mean()),
-            'class_ambiguity': float(ranking['class_ambiguity'].mean()),
-        },
-    }
-
-    if 'distribution_shift' in ranking.columns:
-        report['criteria_means']['distribution_shift'] = float(ranking['distribution_shift'].mean())
-
-    report_path = output_dir / 'uncertainty_report.json'
-    with open(report_path, 'w') as f:
-        json.dump(report, f, indent=2)
-
-    print(f"Report saved to {report_path}")
-    return report
-
-
+# TODO: Move FiftyOne dataset creation to ragweed_toolkit.viz when API supports it
 def create_fiftyone_dataset(
     ranking: pd.DataFrame,
     images_data: Dict,
@@ -534,7 +263,6 @@ def create_fiftyone_dataset(
             if criterion in row:
                 sample[criterion] = float(row[criterion])
 
-        # Add detections as FiftyOne Detections
         img_data = images_data.get(img_name, {})
         dets = img_data.get('detections', [])
         w = img_data.get('width', 1)
@@ -552,7 +280,6 @@ def create_fiftyone_dataset(
             )
         sample['predictions'] = fo.Detections(detections=fo_dets)
 
-        # Tag by uncertainty level
         score = row['composite_score']
         if score > ranking['composite_score'].quantile(0.95):
             sample.tags.append('very_uncertain')
@@ -561,7 +288,6 @@ def create_fiftyone_dataset(
 
         samples.append(sample)
 
-    # Delete existing dataset if present
     if fo.dataset_exists(dataset_name):
         fo.delete_dataset(dataset_name)
 
@@ -573,7 +299,9 @@ def create_fiftyone_dataset(
     print(f"  Launch: python -c \"import fiftyone as fo; fo.load_dataset('{dataset_name}').launch()\"")
 
 
-# ─── Helpers ─────────────────────────────────────────────────────────────────
+# ============================================================================
+# Helpers
+# ============================================================================
 
 def _find_image(img_name: str, images_dir: Optional[str]) -> Optional[Path]:
     """Locate an image file by name in the images directory."""
@@ -598,16 +326,12 @@ def _resolve_images_dir(
     if source and Path(source).is_dir():
         return source
 
-    # Try to infer from detections.json path
-    if source and Path(source).is_file():
-        # detections.json is inside a sahi output dir, images may be in --images
-        # Can't reliably infer - return None
-        pass
-
     return None
 
 
-# ─── Main ────────────────────────────────────────────────────────────────────
+# ============================================================================
+# Main
+# ============================================================================
 
 def main():
     parser = argparse.ArgumentParser(
@@ -616,15 +340,15 @@ def main():
         epilog="""
 Examples:
   # From pre-saved detections
-  python scripts/cli/mine_uncertain_samples.py \\
+  python tools/04_orthomosaic/mine_uncertain_samples.py \\
       --detections outputs/test/sahi_*/detections.json --top 20
 
   # From new images
-  python scripts/cli/mine_uncertain_samples.py \\
+  python tools/04_orthomosaic/mine_uncertain_samples.py \\
       --images /path/to/images --top 30
 
   # With CLIP distribution shift
-  python scripts/cli/mine_uncertain_samples.py \\
+  python tools/04_orthomosaic/mine_uncertain_samples.py \\
       --detections outputs/test/detections.json \\
       --reference-data configs/yaml_config/data_tomate-orobanche-v4-4488tiles.yaml
         """,
@@ -657,8 +381,7 @@ Examples:
     parser.add_argument('--top', type=int, default=None,
                         help='Number of top uncertain images to export (default: from config)')
     parser.add_argument('--ambiguous-classes', type=str, nargs='+', default=None,
-                        help='Classes prone to visual confusion (default: from config). '
-                             'E.g., --ambiguous-classes AMBEL POLAV POLPE for Lencu weeds')
+                        help='Classes prone to visual confusion (default: from config)')
 
     # CLIP reference (optional)
     parser.add_argument('--reference-data', type=str, default=None,
@@ -698,20 +421,14 @@ Examples:
     top_n = args.top or al_config.get('default_top_n', 50)
     output_base = args.output or al_config.get('output_base', 'outputs/active_learning')
     weights = al_config.get('weights', {
-        'low_confidence': 0.30,
-        'confidence_entropy': 0.15,
-        'borderline_density': 0.15,
-        'class_ambiguity': 0.15,
-        'distribution_shift': 0.25,
+        'low_confidence': 0.35,
+        'confidence_entropy': 0.20,
+        'borderline_density': 0.20,
+        'class_ambiguity': 0.25,
     })
     ambiguous_classes = (args.ambiguous_classes
                          or al_config.get('ambiguous_classes',
                                           ['LYPES-G', 'LYPES-O', 'LYPES-R', 'LYPES-Y']))
-    panel_colors = al_config.get('panel_colors', {
-        'high': [0, 200, 0],
-        'medium': [255, 165, 0],
-        'low': [255, 0, 0],
-    })
 
     # Create output directory with timestamp
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -751,62 +468,21 @@ Examples:
     images_dir = _resolve_images_dir(images_data, metadata, args.images_dir or args.images)
 
     # ── Step 2: Build CLIP reference (optional) ──────────────────────────
-    reference = None
-    embeddings = None
-
+    # TODO: Move CLIP reference building to ragweed_toolkit.embeddings when API supports it
     if args.reference_cache or args.reference_data:
-        print("\nBuilding CLIP reference distribution...")
-        from scripts.active_learning.reference_distribution import (
-            build_reference_from_training,
-            compute_image_embeddings_batched,
-            load_reference,
-        )
+        print("\nCLIP reference requested but not yet integrated with library scoring.")
+        print("Proceeding with standard uncertainty scoring (no distribution_shift).")
 
-        cache_path = args.reference_cache
-        if cache_path is None:
-            cache_path = str(output_dir / 'clip_reference.npz')
-
-        if args.reference_cache and Path(args.reference_cache).exists():
-            reference = load_reference(args.reference_cache)
-        elif args.reference_data:
-            reference = build_reference_from_training(
-                args.reference_data,
-                split='train',
-                cache_path=cache_path,
-                device=device.replace('cuda:', 'cuda') if 'cuda' in device else device,
-            )
-
-        # Compute embeddings for input images
-        if reference is not None and images_dir:
-            print("Computing CLIP embeddings for input images...")
-            image_paths = []
-            image_names = []
-            for img_name in images_data.keys():
-                p = _find_image(img_name, images_dir)
-                if p is not None:
-                    image_paths.append(p)
-                    image_names.append(img_name)
-
-            if image_paths:
-                emb_array = compute_image_embeddings_batched(
-                    image_paths,
-                    device=device.replace('cuda:', 'cuda') if 'cuda' in device else device,
-                )
-                embeddings = dict(zip(image_names, emb_array))
-                print(f"Computed embeddings for {len(embeddings)} images")
-
-    # ── Step 3: Score all images ─────────────────────────────────────────
+    # ── Step 3: Score all images using library ───────────────────────────
     print(f"\nScoring {n_images} images...")
     t_score0 = time.perf_counter()
 
-    ranking = score_all_images(
+    ranking = score_images(
         images_data=images_data,
         weights=weights,
         conf_lo=conf_threshold,
         conf_hi=conf_uncertain,
         ambiguous_classes=ambiguous_classes,
-        reference=reference,
-        embeddings=embeddings,
     )
 
     t_score = time.perf_counter() - t_score0
@@ -830,26 +506,45 @@ Examples:
     if len(top_images) > 10:
         print(f"  ... and {len(top_images) - 10} more")
 
-    # Generate panels
+    # Generate panels using library
     if args.panels and images_dir:
         print(f"\nGenerating uncertainty panels for top {top_n}...")
-        generate_uncertainty_panels(
-            top_images, images_data, images_dir, output_dir, conf_uncertain, panel_colors,
+        n_panels = export_uncertain_panels(
+            ranking=ranking,
+            images_data=images_data,
+            images_dir=images_dir,
+            output_dir=str(output_dir),
+            top_n=top_n,
+            conf_hi=conf_uncertain,
         )
+        print(f"Generated {n_panels} uncertainty panels")
     elif args.panels and not images_dir:
         print("\nSkipping panels: cannot locate original images (use --images-dir)")
 
-    # Export YOLO labels
+    # Export YOLO labels using library
     if args.yolo_export and images_dir:
         print(f"\nExporting YOLO labels for top {top_n}...")
-        export_yolo_labels(top_images, images_data, images_dir, output_dir)
+        n_exported = export_yolo_labels(
+            ranking=ranking,
+            images_data=images_data,
+            images_dir=images_dir,
+            output_dir=str(output_dir),
+            top_n=top_n,
+        )
+        print(f"Exported {n_exported} images + labels")
     elif args.yolo_export and not images_dir:
         print("\nSkipping YOLO export: cannot locate original images (use --images-dir)")
 
-    # Generate report
-    report = generate_report(ranking, metadata, top_n, output_dir)
+    # Generate report using library
+    report = generate_uncertainty_report(
+        ranking=ranking,
+        top_n=top_n,
+        output_dir=str(output_dir),
+        metadata=metadata,
+    )
+    print(f"Report saved to {output_dir / 'uncertainty_report.json'}")
 
-    # FiftyOne dataset
+    # FiftyOne dataset (CLI-specific)
     if args.fiftyone and images_dir:
         ds_name = f"uncertainty_mining_{timestamp}"
         create_fiftyone_dataset(ranking, images_data, images_dir, top_n, ds_name)

@@ -49,6 +49,20 @@ from scipy.stats import pearsonr
 warnings.filterwarnings("ignore", category=FutureWarning)
 warnings.filterwarnings("ignore", category=UserWarning)
 
+# ---- Portable path resolution ----
+_script_dir = Path(__file__).resolve().parent
+_project_root = _script_dir.parent.parent
+sys.path.insert(0, str(_project_root))
+sys.path.insert(0, str(_project_root / "src"))
+
+# TODO: This script is entirely bespoke analysis code (cosine similarity,
+# combined PCA, cluster agreement ARI/NMI, temporal sensitivity, PCA
+# cross-correlation). No direct library equivalents exist yet.
+# Future candidates for ragweed_toolkit.satellite.comparison module:
+#   - row_cosine_similarities -> ragweed_toolkit.embeddings.similarity
+#   - match_datasets -> ragweed_toolkit.satellite.presto.match_cells
+#   - analysis_3_cluster_agreement -> ragweed_toolkit.spatial.cluster_agreement
+
 # ── Configuration ──────────────────────────────────────────────────────────
 
 PROJECT_ROOT = Path("/home/malezainia1/dev/INIA_DeepLearning_Ubuntu_mod_lleon")

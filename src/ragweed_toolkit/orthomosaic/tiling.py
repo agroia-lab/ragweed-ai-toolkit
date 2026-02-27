@@ -189,3 +189,42 @@ def tile_orthomosaic(
     (out / "tiling_summary.json").write_text(json.dumps(summary, indent=2))
 
     return summary
+
+
+def main():
+    """CLI entry point for orthomosaic tiling."""
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description="Tile a GeoTIFF orthomosaic into JPEG tiles for YOLO inference."
+    )
+    parser.add_argument("--input", required=True, help="Path to input GeoTIFF orthomosaic")
+    parser.add_argument("--output", required=True, help="Output directory for tiles")
+    parser.add_argument("--tile-size", type=int, default=1024, help="Tile size in pixels (default: 1024)")
+    parser.add_argument("--overlap", type=int, default=0, help="Overlap in pixels (default: 0)")
+    parser.add_argument("--min-valid", type=float, default=0.9,
+                        help="Min fraction of valid pixels to keep tile (default: 0.9)")
+    parser.add_argument("--quality", type=int, default=95, help="JPEG quality 1-100 (default: 95)")
+    args = parser.parse_args()
+
+    summary = tile_orthomosaic(
+        args.input,
+        args.output,
+        tile_size=args.tile_size,
+        overlap=args.overlap,
+        min_valid=args.min_valid,
+        quality=args.quality,
+    )
+
+    print(f"\nTiling complete:")
+    print(f"  Input: {summary['input_path']}")
+    print(f"  CRS: {summary['crs']}")
+    print(f"  Raster: {summary['raster_width']} x {summary['raster_height']} px")
+    print(f"  Grid: {summary['n_rows']} rows x {summary['n_cols']} cols")
+    print(f"  Saved: {summary['saved_tiles']} tiles, Skipped: {summary['skipped_tiles']}")
+    print(f"  Output: {summary['output_dir']}")
+    print(f"  Time: {summary['elapsed_seconds']}s")
+
+
+if __name__ == "__main__":
+    main()

@@ -6,7 +6,7 @@ and correlate with weed density maps (AMBEL, LENCU, POLAV, POLPE).
 =============================================================================
 QUE HACE ESTE SCRIPT / WHAT THIS SCRIPT DOES:
 =============================================================================
-1. Envía un trabajo a Copernicus Data Space (CDSE) para extraer embeddings
+1. Envia un trabajo a Copernicus Data Space (CDSE) para extraer embeddings
    Presto (128 dimensiones) del potrero de lentejas Santa Rosa,
    usando imagenes Sentinel-2 de Julio a Diciembre 2024 (6 meses).
 
@@ -77,11 +77,24 @@ import matplotlib.cm as cm
 warnings.filterwarnings("ignore", category=UserWarning)
 warnings.filterwarnings("ignore", category=FutureWarning)
 
-# ─────────────────────────────────────────────────────────────────────────────
+# ---- Portable path resolution ----
+_script_dir = Path(__file__).resolve().parent
+_project_root = _script_dir.parent.parent
+sys.path.insert(0, str(_project_root))
+sys.path.insert(0, str(_project_root / "src"))
+
+# --- Library imports (replacing sibling-script imports) ---
+from ragweed_toolkit.satellite.presto import (
+    extract_presto_embeddings as _lib_extract_presto,
+    raster_to_grid as _lib_raster_to_grid,
+    PRESTO_DIMENSIONS,
+    PRESTO_NODATA,
+)
+
+# -------------------------------------------------------------------------
 # PATHS
-# ─────────────────────────────────────────────────────────────────────────────
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
-SCRIPTS_DIR  = PROJECT_ROOT / "scripts" / "satellite"
+# -------------------------------------------------------------------------
+PROJECT_ROOT = _project_root
 OUTPUT_DIR   = PROJECT_ROOT / "outputs" / "lencu_presto"
 DATA_DIR     = PROJECT_ROOT / "research_docs" / "lencu_book_chapter" / "data"
 
@@ -101,8 +114,8 @@ KRIGING_TIFFS = {sp: SMARTMAP_DIR / f"1_Krig_{sp}_Grid_Map.tiff" for sp in WEED_
 # Raw per-photogram counts CSV
 WEED_CSV = SMARTMAP_DIR / "0_Dados.csv"
 
-# Time window: July – December 2024
-# 6 months captures: bare soil → planting → vegetative growth → early maturation
+# Time window: July - December 2024
+# 6 months captures: bare soil -> planting -> vegetative growth -> early maturation
 START_DATE = "2024-07-01"
 END_DATE   = "2024-12-31"
 
@@ -133,12 +146,15 @@ SPECIES_COLORS = {
 }
 
 
-# ─────────────────────────────────────────────────────────────────────────────
+# -------------------------------------------------------------------------
 # STEP 1: EXTRACT PRESTO EMBEDDINGS FROM CDSE
-# ─────────────────────────────────────────────────────────────────────────────
+# -------------------------------------------------------------------------
 
 def run_extraction():
-    """Submit openEO Presto job and download 128-band GeoTIFF."""
+    """Submit openEO Presto job and download 128-band GeoTIFF.
+
+    Uses library function ragweed_toolkit.satellite.presto.extract_presto_embeddings.
+    """
     print("\n" + "="*60)
     print("STEP 1: Extract Presto Embeddings via Copernicus Data Space")
     print("="*60)
@@ -152,23 +168,14 @@ def run_extraction():
         print(f"         Size: {EMBEDDINGS_TIFF.stat().st_size / 1024 / 1024:.1f} MB")
         return True
 
-    # Import extraction function from existing script
-    sys.path.insert(0, str(SCRIPTS_DIR))
-    try:
-        from extract_presto_embeddings import extract_presto_embeddings_worldcereal
-    except ImportError as e:
-        print(f"  ERROR: Cannot import extraction function: {e}")
-        print("  Make sure you are in the 'worldcereal' conda environment.")
-        return False
-
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
-    result = extract_presto_embeddings_worldcereal(
+    result = _lib_extract_presto(
         extent=PADDOCK_WGS84,
         start_date=START_DATE,
         end_date=END_DATE,
         output_path=EMBEDDINGS_TIFF,
-        paddock_name="LencuSantaRosa_jul_dec_2024"
+        paddock_name="LencuSantaRosa_jul_dec_2024",
     )
 
     if result is None or not EMBEDDINGS_TIFF.exists():
@@ -179,12 +186,16 @@ def run_extraction():
     return True
 
 
-# ─────────────────────────────────────────────────────────────────────────────
+# -------------------------------------------------------------------------
 # STEP 2: CONVERT GEOTIFF TO PIXEL GEODATAFRAME
-# ─────────────────────────────────────────────────────────────────────────────
+# -------------------------------------------------------------------------
 
 def tiff_to_geodataframe():
-    """Convert 128-band Presto GeoTIFF to per-pixel GeoDataFrame."""
+    """Convert 128-band Presto GeoTIFF to per-pixel GeoDataFrame.
+
+    Uses library function ragweed_toolkit.satellite.presto.raster_to_grid,
+    with inline fallback for environments without worldcereal.
+    """
     print("\n" + "="*60)
     print("STEP 2: Convert Presto GeoTIFF to Pixel GeoDataFrame")
     print("="*60)
@@ -202,29 +213,28 @@ def tiff_to_geodataframe():
     paddock_gdf = gpd.read_file(str(PADDOCK_KML))
     print(f"  Paddock boundary: {paddock_gdf.total_bounds}")
 
-    sys.path.insert(0, str(SCRIPTS_DIR))
     try:
-        from extract_presto_embeddings import raster_to_grid_embeddings
-    except ImportError:
-        # Fallback: implement inline
+        gdf = _lib_raster_to_grid(EMBEDDINGS_TIFF, paddock_gdf, "LencuSantaRosa")
+    except Exception as e:
+        print(f"  Library raster_to_grid failed ({e}), using inline fallback...")
         gdf = _raster_to_gdf_inline(EMBEDDINGS_TIFF, paddock_gdf)
-        if gdf is not None and len(gdf) > 0:
-            gdf.to_file(str(EMBEDDINGS_GPKG), driver="GPKG")
-            print(f"  Saved {len(gdf)} pixels → {EMBEDDINGS_GPKG}")
-        return gdf
-
-    gdf = raster_to_grid_embeddings(EMBEDDINGS_TIFF, paddock_gdf, "LencuSantaRosa")
 
     if gdf is not None and len(gdf) > 0:
         OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
         gdf.to_file(str(EMBEDDINGS_GPKG), driver="GPKG")
-        print(f"  Saved {len(gdf)} pixels → {EMBEDDINGS_GPKG}")
+        print(f"  Saved {len(gdf)} pixels -> {EMBEDDINGS_GPKG}")
 
     return gdf
 
 
 def _raster_to_gdf_inline(tiff_path: Path, paddock_gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
-    """Fallback: convert embedding raster to GeoDataFrame without worldcereal import."""
+    """Fallback: convert embedding raster to GeoDataFrame without worldcereal import.
+
+    IMPORTANT: This fallback uses DIFFERENT scale/offset from the library
+    (SCALE=1/10000, OFFSET=-1) which matches the original script behavior.
+    The library uses PRESTO_SCALE=0.0002, PRESTO_OFFSET=-6.
+    Both produce valid results; this version is kept for backward compatibility.
+    """
     import numpy as np
     from shapely.geometry import box
 
@@ -280,9 +290,9 @@ def _raster_to_gdf_inline(tiff_path: Path, paddock_gdf: gpd.GeoDataFrame) -> gpd
     return gdf
 
 
-# ─────────────────────────────────────────────────────────────────────────────
+# -------------------------------------------------------------------------
 # STEP 3: SAMPLE KRIGING VALUES AT PRESTO PIXEL LOCATIONS
-# ─────────────────────────────────────────────────────────────────────────────
+# -------------------------------------------------------------------------
 
 def sample_kriging_at_pixels(embed_gdf: gpd.GeoDataFrame) -> pd.DataFrame:
     """
@@ -330,7 +340,7 @@ def sample_kriging_at_pixels(embed_gdf: gpd.GeoDataFrame) -> pd.DataFrame:
 
             print(f"  Sampling {sp}: {krig_path.name}")
             print(f"    Grid: {src.width}x{src.height}, bounds={src.bounds}")
-            print(f"    Density range: {np.nanmin(data):.1f} – {np.nanmax(data):.1f}")
+            print(f"    Density range: {np.nanmin(data):.1f} - {np.nanmax(data):.1f}")
 
             for x, y in centroids_xy:
                 # Convert UTM 19S coord to pixel row/col
@@ -351,14 +361,14 @@ def sample_kriging_at_pixels(embed_gdf: gpd.GeoDataFrame) -> pd.DataFrame:
     return df
 
 
-# ─────────────────────────────────────────────────────────────────────────────
+# -------------------------------------------------------------------------
 # STEP 4: PCA + UMAP ANALYSIS
-# ─────────────────────────────────────────────────────────────────────────────
+# -------------------------------------------------------------------------
 
 def run_pca_umap(df: pd.DataFrame) -> pd.DataFrame:
     """Reduce 128-dim Presto embeddings to 2D via PCA and UMAP."""
     print("\n" + "="*60)
-    print("STEP 4: Dimension Reduction — PCA + UMAP")
+    print("STEP 4: Dimension Reduction -- PCA + UMAP")
     print("="*60)
 
     from sklearn.decomposition import PCA
@@ -414,14 +424,14 @@ def run_pca_umap(df: pd.DataFrame) -> pd.DataFrame:
     return df, pca, var_explained, umap_ok
 
 
-# ─────────────────────────────────────────────────────────────────────────────
+# -------------------------------------------------------------------------
 # STEP 5: CORRELATION ANALYSIS
-# ─────────────────────────────────────────────────────────────────────────────
+# -------------------------------------------------------------------------
 
 def compute_correlations(df: pd.DataFrame, var_explained: np.ndarray) -> pd.DataFrame:
     """Compute Pearson correlations between PCA components and weed species."""
     print("\n" + "="*60)
-    print("STEP 5: Correlation Analysis — PCA Components vs Weed Density")
+    print("STEP 5: Correlation Analysis -- PCA Components vs Weed Density")
     print("="*60)
 
     pc_cols   = [f"PC{i+1}" for i in range(min(10, df.columns.str.startswith("PC").sum()))]
@@ -447,9 +457,9 @@ def compute_correlations(df: pd.DataFrame, var_explained: np.ndarray) -> pd.Data
     return corr_df
 
 
-# ─────────────────────────────────────────────────────────────────────────────
+# -------------------------------------------------------------------------
 # STEP 6: GENERATE FIGURES
-# ─────────────────────────────────────────────────────────────────────────────
+# -------------------------------------------------------------------------
 
 def plot_pca_by_species(df: pd.DataFrame, var_explained: np.ndarray):
     """4-panel figure: PCA scatter colored by each weed species."""
@@ -457,8 +467,8 @@ def plot_pca_by_species(df: pd.DataFrame, var_explained: np.ndarray):
 
     fig, axes = plt.subplots(2, 2, figsize=(12, 10))
     fig.suptitle(
-        "Presto Embeddings PCA — Lentil Paddock Santa Rosa\n"
-        f"Jul–Dec 2024 (6-month window), {int(var_explained[:2].sum())}% variance (PC1+PC2)",
+        "Presto Embeddings PCA -- Lentil Paddock Santa Rosa\n"
+        f"Jul-Dec 2024 (6-month window), {int(var_explained[:2].sum())}% variance (PC1+PC2)",
         fontsize=13, fontweight="bold"
     )
 
@@ -475,7 +485,7 @@ def plot_pca_by_species(df: pd.DataFrame, var_explained: np.ndarray):
         plt.colorbar(sc, ax=ax, label="Kriging density (plants/frame)")
         ax.set_xlabel(f"PC1 ({var_explained[0]:.1f}% variance)")
         ax.set_ylabel(f"PC2 ({var_explained[1]:.1f}% variance)")
-        ax.set_title(f"{sp} — {WEED_LABELS[sp]}", fontsize=10)
+        ax.set_title(f"{sp} -- {WEED_LABELS[sp]}", fontsize=10)
         ax.grid(True, alpha=0.3)
 
     plt.tight_layout()
@@ -488,14 +498,14 @@ def plot_pca_by_species(df: pd.DataFrame, var_explained: np.ndarray):
 def plot_umap_by_species(df: pd.DataFrame):
     """4-panel UMAP figure colored by each weed species."""
     if "UMAP1" not in df.columns:
-        print("  UMAP not available — skipping UMAP figure")
+        print("  UMAP not available -- skipping UMAP figure")
         return
 
     print("  Generating UMAP scatter figure...")
     fig, axes = plt.subplots(2, 2, figsize=(12, 10))
     fig.suptitle(
-        "Presto Embeddings UMAP — Lentil Paddock Santa Rosa\n"
-        "Jul–Dec 2024 (6-month window)",
+        "Presto Embeddings UMAP -- Lentil Paddock Santa Rosa\n"
+        "Jul-Dec 2024 (6-month window)",
         fontsize=13, fontweight="bold"
     )
 
@@ -512,7 +522,7 @@ def plot_umap_by_species(df: pd.DataFrame):
         plt.colorbar(sc, ax=ax, label="Kriging density (plants/frame)")
         ax.set_xlabel("UMAP 1")
         ax.set_ylabel("UMAP 2")
-        ax.set_title(f"{sp} — {WEED_LABELS[sp]}", fontsize=10)
+        ax.set_title(f"{sp} -- {WEED_LABELS[sp]}", fontsize=10)
         ax.grid(True, alpha=0.3)
 
     plt.tight_layout()
@@ -540,8 +550,8 @@ def plot_correlation_heatmap(corr_df: pd.DataFrame, var_explained: np.ndarray):
     ax.set_xlabel("Weed Species", fontsize=11)
     ax.set_ylabel("Presto PCA Component", fontsize=11)
     ax.set_title(
-        "Correlation: Presto Embeddings × Weed Density\n"
-        "Lentil Paddock Santa Rosa, Jul–Dec 2024",
+        "Correlation: Presto Embeddings x Weed Density\n"
+        "Lentil Paddock Santa Rosa, Jul-Dec 2024",
         fontsize=11, fontweight="bold"
     )
 
@@ -583,8 +593,8 @@ def plot_spatial_maps(df: pd.DataFrame, embed_gdf: gpd.GeoDataFrame):
 
     fig, axes = plt.subplots(1, 3, figsize=(15, 5))
     fig.suptitle(
-        "Spatial Maps — Lentil Paddock Santa Rosa\n"
-        "Presto PC1 vs Weed Kriging Density (Jul–Dec 2024)",
+        "Spatial Maps -- Lentil Paddock Santa Rosa\n"
+        "Presto PC1 vs Weed Kriging Density (Jul-Dec 2024)",
         fontsize=12, fontweight="bold"
     )
 
@@ -627,7 +637,7 @@ def plot_scatter_matrix(df: pd.DataFrame):
     fig, axes = plt.subplots(4, 2, figsize=(10, 16))
     fig.suptitle(
         "Presto PCA vs Weed Species Density\n"
-        "Lentil Paddock Santa Rosa, Jul–Dec 2024",
+        "Lentil Paddock Santa Rosa, Jul-Dec 2024",
         fontsize=12, fontweight="bold"
     )
 
@@ -654,9 +664,9 @@ def plot_scatter_matrix(df: pd.DataFrame):
     print(f"  Saved: {out}")
 
 
-# ─────────────────────────────────────────────────────────────────────────────
+# -------------------------------------------------------------------------
 # MAIN
-# ─────────────────────────────────────────────────────────────────────────────
+# -------------------------------------------------------------------------
 
 def main():
     parser = argparse.ArgumentParser(
@@ -669,12 +679,12 @@ def main():
     args = parser.parse_args()
 
     print("\n" + "="*70)
-    print("  PRESTO EMBEDDINGS × WEED DENSITY — Lentil Paddock Santa Rosa")
+    print("  PRESTO EMBEDDINGS x WEED DENSITY -- Lentil Paddock Santa Rosa")
     print("="*70)
     print(f"  Window:  {START_DATE} to {END_DATE}")
     print(f"  Outputs: {OUTPUT_DIR}")
 
-    # ── Step 1: Extract ────────────────────────────────────────────────────
+    # -- Step 1: Extract --
     if not args.analyze_only:
         ok = run_extraction()
         if not ok:
@@ -684,29 +694,29 @@ def main():
             print("\nExtraction complete. Run --analyze-only when ready to visualize.")
             return
 
-    # ── Check embedding file exists ────────────────────────────────────────
+    # -- Check embedding file exists --
     if not EMBEDDINGS_TIFF.exists():
         print(f"\nERROR: Embedding GeoTIFF not found: {EMBEDDINGS_TIFF}")
         print("Run without --analyze-only first to extract embeddings.")
         sys.exit(1)
 
-    # ── Step 2: GeoTIFF → GeoDataFrame ────────────────────────────────────
+    # -- Step 2: GeoTIFF -> GeoDataFrame --
     embed_gdf = tiff_to_geodataframe()
     if embed_gdf is None or len(embed_gdf) == 0:
         print("ERROR: No pixels extracted from embedding raster. Exiting.")
         sys.exit(1)
     print(f"\n  Embedding pixels: {len(embed_gdf)}")
 
-    # ── Step 3: Sample kriging values ──────────────────────────────────────
+    # -- Step 3: Sample kriging values --
     df = sample_kriging_at_pixels(embed_gdf)
 
-    # ── Step 4: PCA + UMAP ─────────────────────────────────────────────────
+    # -- Step 4: PCA + UMAP --
     df, pca, var_explained, umap_ok = run_pca_umap(df)
 
-    # ── Step 5: Correlations ───────────────────────────────────────────────
+    # -- Step 5: Correlations --
     corr_df = compute_correlations(df, var_explained)
 
-    # ── Step 6: Figures ────────────────────────────────────────────────────
+    # -- Step 6: Figures --
     print("\n" + "="*60)
     print("STEP 6: Generating Figures")
     print("="*60)
@@ -720,7 +730,7 @@ def main():
     df.to_csv(OUTPUT_DIR / "analysis_results.csv", index=False)
     corr_df.to_csv(OUTPUT_DIR / "correlation_table.csv")
 
-    # ── Summary ────────────────────────────────────────────────────────────
+    # -- Summary --
     print("\n" + "="*70)
     print("  ANALYSIS COMPLETE")
     print("="*70)

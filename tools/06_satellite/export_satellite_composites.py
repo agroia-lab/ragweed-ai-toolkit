@@ -31,8 +31,18 @@ import time
 _script_dir = Path(__file__).resolve().parent
 _project_root = _script_dir.parent.parent
 sys.path.insert(0, str(_project_root))
+sys.path.insert(0, str(_project_root / "src"))
 
 from scripts.utils.paths import get_paths
+
+# --- Library imports (replacing internal duplicates) ---
+from ragweed_toolkit.satellite.composites import (
+    get_sentinel2_collection as _lib_get_collection,
+    compute_ndvi,
+    export_ndvi_max as _lib_export_ndvi_max,
+    export_rgb_median as _lib_export_rgb_median,
+    SEASON_WINDOWS,
+)
 
 # Earth Engine project
 EE_PROJECT = "gen-lang-client-0195046178"
@@ -53,15 +63,6 @@ _satellite_embeddings = _paths.get('external', {}).get('satellite_embeddings', '
 # Configuration
 BASE_PATH = _satellite_embeddings
 BOUNDARIES_FILE = f"{BASE_PATH}/paddock_boundaries.gpkg"
-
-# Season date windows (peak tomato season: Dec 15 - Jan 15)
-SEASON_WINDOWS = {
-    "25-26": ("2024-12-15", "2025-01-15"),
-    "24-25": ("2023-12-15", "2024-01-15"),
-    "22-23": ("2022-12-15", "2023-01-15"),
-    "21-22": ("2021-12-15", "2022-01-15"),
-    "20-21": ("2020-12-15", "2021-01-15"),
-}
 
 
 def get_paddock_geometry(paddock_name, boundaries_file):
@@ -116,28 +117,16 @@ def get_paddock_geometry(paddock_name, boundaries_file):
         return ee_geom
 
 
-def get_sentinel2_collection(start_date, end_date, geometry):
-    """Get cloud-filtered Sentinel-2 collection."""
-    collection = (
-        ee.ImageCollection("COPERNICUS/S2_SR_HARMONIZED")
-        .filterDate(start_date, end_date)
-        .filterBounds(geometry)
-        .filter(ee.Filter.lt("CLOUDY_PIXEL_PERCENTAGE", 30))
-    )
-    return collection
-
-
-def compute_ndvi(image):
-    """Compute NDVI for Sentinel-2 image."""
-    ndvi = image.normalizedDifference(["B8", "B4"]).rename("NDVI")
-    return image.addBands(ndvi)
-
+# --- Thin CLI wrappers that add logging around the library functions ---
+# The library functions have the signature (geometry, start_date, end_date, paddock_name)
+# and do not print progress. These wrappers preserve the original CLI output.
 
 def export_ndvi_max(geometry, start_date, end_date, output_path, paddock_name):
-    """Export max NDVI composite as GeoTIFF."""
+    """Export max NDVI composite as GeoTIFF (wrapper around library function)."""
     print(f"  Exporting Max NDVI for {paddock_name}...")
 
-    collection = get_sentinel2_collection(start_date, end_date, geometry)
+    # Count images for user feedback (library does this internally but doesn't print)
+    collection = _lib_get_collection(geometry, start_date, end_date)
     count = collection.size().getInfo()
     print(f"    Found {count} Sentinel-2 images")
 
@@ -145,57 +134,26 @@ def export_ndvi_max(geometry, start_date, end_date, output_path, paddock_name):
         print(f"    WARNING: No images found!")
         return None
 
-    # Compute NDVI and get max
-    ndvi_collection = collection.map(compute_ndvi)
-    ndvi_max = ndvi_collection.select("NDVI").max()
-
-    # Export to Drive first, then download
-    task = ee.batch.Export.image.toDrive(
-        image=ndvi_max,
-        description=f"ndvi_max_{paddock_name}",
-        folder="satellite_exports",
-        fileNamePrefix=f"ndvi_max_{paddock_name}",
-        region=geometry,
-        scale=10,
-        crs="EPSG:32719",
-        maxPixels=1e9
-    )
-
-    task.start()
-    print(f"    Export task started: {task.id}")
+    task = _lib_export_ndvi_max(geometry, start_date, end_date, paddock_name)
+    if task:
+        print(f"    Export task started: {task.id}")
     return task
 
 
 def export_rgb_median(geometry, start_date, end_date, output_path, paddock_name):
-    """Export median RGB composite as GeoTIFF."""
+    """Export median RGB composite as GeoTIFF (wrapper around library function)."""
     print(f"  Exporting RGB Median for {paddock_name}...")
 
-    collection = get_sentinel2_collection(start_date, end_date, geometry)
+    collection = _lib_get_collection(geometry, start_date, end_date)
     count = collection.size().getInfo()
 
     if count == 0:
         print(f"    WARNING: No images found!")
         return None
 
-    # Get median RGB (B4=Red, B3=Green, B2=Blue)
-    rgb_median = collection.select(["B4", "B3", "B2"]).median()
-
-    # Scale to 0-255 for visualization (divide by 10000, multiply by 255, cap at 255)
-    rgb_vis = rgb_median.divide(3000).multiply(255).clamp(0, 255).toUint8()
-
-    task = ee.batch.Export.image.toDrive(
-        image=rgb_vis,
-        description=f"rgb_median_{paddock_name}",
-        folder="satellite_exports",
-        fileNamePrefix=f"rgb_median_{paddock_name}",
-        region=geometry,
-        scale=10,
-        crs="EPSG:32719",
-        maxPixels=1e9
-    )
-
-    task.start()
-    print(f"    Export task started: {task.id}")
+    task = _lib_export_rgb_median(geometry, start_date, end_date, paddock_name)
+    if task:
+        print(f"    Export task started: {task.id}")
     return task
 
 

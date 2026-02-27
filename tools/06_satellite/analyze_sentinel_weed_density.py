@@ -50,6 +50,7 @@ SALIDAS (en outputs/lencu_sentinel_analysis/):
   analysis_data.csv              - Datos pixel a pixel completos
 """
 
+import sys
 import warnings
 from pathlib import Path
 
@@ -71,10 +72,21 @@ from scipy import stats
 
 warnings.filterwarnings("ignore")
 
+# ---- Portable path resolution ----
+_script_dir = Path(__file__).resolve().parent
+_project_root = _script_dir.parent.parent
+sys.path.insert(0, str(_project_root))
+sys.path.insert(0, str(_project_root / "src"))
+
+# --- Library imports (replacing internal duplicate) ---
+from ragweed_toolkit.satellite.indices import (
+    compute_spectral_indices as _lib_compute_spectral_indices,
+)
+
 # ─────────────────────────────────────────────────────────────────────────────
 # PATHS
 # ─────────────────────────────────────────────────────────────────────────────
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
+PROJECT_ROOT = _project_root
 OUTPUT_DIR   = PROJECT_ROOT / "outputs" / "lencu_sentinel_analysis"
 
 # Sentinel-2 clipped multispectral (11 bands, already in UTM 19S, 5m)
@@ -165,55 +177,20 @@ def load_sentinel_data():
 # ─────────────────────────────────────────────────────────────────────────────
 
 def compute_spectral_indices(spectral: np.ndarray, valid: np.ndarray) -> dict:
-    """Compute NDVI, EVI, BSI, SWIR, clay index, etc."""
+    """Compute NDVI, EVI, BSI, SWIR, clay index, etc.
+
+    Thin wrapper around ragweed_toolkit.satellite.indices.compute_spectral_indices
+    that adds logging output for CLI usage.
+    """
     print("\n" + "="*60)
     print("STEP 2: Compute Spectral Indices")
     print("="*60)
 
-    eps = 1e-9  # avoid division by zero
+    # Delegate to library function (same signature: 10-band array + valid mask)
+    indices = _lib_compute_spectral_indices(spectral, valid)
 
-    B2  = spectral[0].astype(float)   # Blue
-    B3  = spectral[1].astype(float)   # Green
-    B4  = spectral[2].astype(float)   # Red
-    B5  = spectral[3].astype(float)   # Red Edge 1
-    B6  = spectral[4].astype(float)   # Red Edge 2
-    B7  = spectral[5].astype(float)   # Red Edge 3
-    B8  = spectral[6].astype(float)   # NIR
-    B8A = spectral[7].astype(float)   # Narrow NIR
-    B11 = spectral[8].astype(float)   # SWIR1
-    B12 = spectral[9].astype(float)   # SWIR2
-
-    indices = {}
-
-    # NDVI: vegetation density
-    indices["NDVI"]  = (B8 - B4) / (B8 + B4 + eps)
-
-    # EVI: enhanced vegetation (less atmosphere-sensitive than NDVI)
-    indices["EVI"]   = 2.5 * (B8 - B4) / (B8 + 6*B4 - 7.5*B2 + 1 + eps)
-
-    # GNDVI: green NDVI (chlorophyll content)
-    indices["GNDVI"] = (B8 - B3) / (B8 + B3 + eps)
-
-    # Red Edge NDVI (phenological state)
-    indices["RENDVI"] = (B8A - B5) / (B8A + B5 + eps)
-
-    # SWIR1/NIR ratio (soil moisture, Sentinel-2 Water Index)
-    indices["S2WI"]  = (B8 - B11) / (B8 + B11 + eps)
-
-    # NBR2 (moisture/residue)
-    indices["NBR2"]  = (B11 - B12) / (B11 + B12 + eps)
-
-    # Bare Soil Index (BSI)
-    indices["BSI"]   = ((B11 + B4) - (B8 + B2)) / ((B11 + B4) + (B8 + B2) + eps)
-
-    # Clay minerals index (B11/B12)
-    indices["Clay"]  = B11 / (B12 + eps)
-
-    # SWIR difference (texture proxy)
-    indices["SWIRd"] = B11 - B12
-
+    # Print statistics for user feedback
     for name, arr in indices.items():
-        arr[~valid] = np.nan
         v = arr[valid]
         print(f"  {name:8s}: min={np.nanmin(v):.3f}  max={np.nanmax(v):.3f}  "
               f"mean={np.nanmean(v):.3f}")

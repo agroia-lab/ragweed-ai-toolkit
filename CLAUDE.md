@@ -138,19 +138,80 @@ under climate variability -- and we put this repository into the community's han
 - **Figures**: Fig. N.1, Fig. N.2 (N = chapter number). Captions at end of text file.
 - **Tables**: Table N.1, Table N.2. Built in LaTeX, not as images.
 
+## CLI Entry Points (pip install)
+
+After `pip install -e .`, these commands are available:
+
+| Command | Module | Description |
+|---------|--------|-------------|
+| `ragweed-train` | detection.trainer | Train YOLO model with validated hyperparameters |
+| `ragweed-sahi` | detection.inference | SAHI sliced inference on images |
+| `ragweed-embed` | embeddings.extractor | Extract ResNet-50 CNN embeddings |
+| `ragweed-mmd` | embeddings.mmd | Compute MMD + deployment gate |
+| `ragweed-tile` | orthomosaic.tiling | Tile GeoTIFF orthomosaic for YOLO |
+| `ragweed-kriging` | geostatistics.kriging | Ordinary kriging interpolation |
+| `ragweed-lisa` | spatial.lisa | Bivariate LISA cluster analysis |
+| `ragweed-indices` | satellite.indices | Compute 9 spectral indices from GeoTIFF |
+
+```bash
+ragweed-train --help
+ragweed-mmd --source embeddings_a.npy --target embeddings_b.npy
+ragweed-indices --input sentinel2.tif --output-dir indices/
+```
+
+## Notebook Tutorials
+
+| Notebook | Workflow |
+|----------|----------|
+| `notebooks/01_detection_workflow.ipynb` | Train → SAHI → GPS → shapefile → map |
+| `notebooks/02_crossdomain_analysis.ipynb` | Embeddings → MMD → deployment gates → UMAP |
+| `notebooks/03_spatial_mapping.ipynb` | Variogram → kriging → LISA → GWR |
+| `notebooks/04_satellite_integration.ipynb` | Indices → PRESTO → correlation → risk zones |
+
+All notebooks use synthetic data and are self-contained.
+
+## CLI Tools (tools/)
+
+27 CLI scripts in `tools/` organized by module. Each is a thin wrapper that imports
+core logic from `ragweed_toolkit` and adds argparse + formatted output.
+
+```
+tools/
+├── 01_detection/          # YOLO training + SAHI inference (2 scripts)
+├── 02_embedding/          # ResNet-50 embeddings, MMD domain shift (5 scripts)
+├── 03_crossdomain/        # Dataset building + cross-domain evaluation (4 scripts)
+├── 04_orthomosaic/        # Tiling, geo-export, active learning (3 scripts)
+├── 05_geostatistics/      # LISA cluster analysis (2 scripts, pygeoda backend)
+└── 06_satellite/          # NDVI, PRESTO, GWR, spectral indices (11 scripts)
+```
+
+Run any tool:
+```bash
+python tools/01_detection/train_yolo_cli.py --help
+python tools/03_crossdomain/crossdomain_eval.py --model best.pt --manifest manifest.csv
+python tools/06_satellite/extract_presto_embeddings.py --paddock all --season 25-26
+```
+
+**Note:** Geostatistics scripts use pygeoda (KNN weights) while the library uses
+esda (DistanceBand weights). Core analysis functions have TODO comments for future
+unification when the library API supports both backends.
+
 ## File Locations
 
 | What | Where |
 |------|-------|
 | Package source | `src/ragweed_toolkit/` |
+| CLI tools | `tools/` |
 | Tests | `tests/` |
 | Examples | `examples/` |
+| Notebooks | `notebooks/` |
 | Chapter LaTeX | `research_docs/lencu_book_chapter/chapter/main.tex` |
 | Figures | `research_docs/lencu_book_chapter/chapter/figures/` |
 | Evidence docs | `evidence/` |
 | Configs | `configs/` |
 | Data pointers | `data/README.md` |
 | Narrative roadmap | `docs/CHAPTER_STORYLINE.md` |
+| Conda env | `environment.yml` |
 
 ## Session History
 
@@ -158,3 +219,5 @@ under climate variability -- and we put this repository into the community's han
 |---------|------|-------|
 | 1 | 2026-02-26 | Scaffold package, implement all 8 modules (detection, embeddings, geostatistics, spatial, satellite, crossdomain, orthomosaic, viz) |
 | 2 | 2026-02-26 | Viz module implementation, pytest test suite, example scripts, CLAUDE.md update |
+| 3 | 2026-02-27 | Refactor 27 tools/ CLI scripts to import from ragweed_toolkit (thin wrappers) |
+| 4 | 2026-02-27 | CLI entry points (8 commands via pyproject.toml), 4 notebook tutorials, environment.yml |

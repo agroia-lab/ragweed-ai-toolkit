@@ -11,7 +11,7 @@ The modification is in:
   worldcereal-classification_malezas/src/worldcereal/openeo/feature_extractor.py
   worldcereal-classification_malezas/src/worldcereal/openeo/inference.py
 
-Predefined agricultural windows for Orobanche in tomato (Chile, ~34°S):
+Predefined agricultural windows for Orobanche in tomato (Chile, ~34S):
   planting:        Sep-Nov (3 months)  Early crop establishment
   growth:          Dec-Feb (3 months)  Peak growth + orobanche emergence
   peak:            Oct-Jan (4 months)  Full orobanche symptom window
@@ -72,7 +72,26 @@ try:
 except ImportError:
     SKLEARN_AVAILABLE = False
 
-# Import shared functions from original script
+# ---- Portable path resolution ----
+_script_dir = Path(__file__).resolve().parent
+_project_root = _script_dir.parent.parent
+sys.path.insert(0, str(_project_root))
+sys.path.insert(0, str(_project_root / "src"))
+
+# --- Library imports (replacing sibling-script imports) ---
+from ragweed_toolkit.satellite.presto import (
+    extract_presto_embeddings as _lib_extract_presto,
+    raster_to_grid as _lib_raster_to_grid,
+    apply_clustering as _lib_apply_clustering,
+    apply_pca as _lib_apply_pca,
+    PRESTO_DIMENSIONS,
+    PRESTO_SCALE,
+    PRESTO_OFFSET,
+    PRESTO_NODATA,
+)
+
+# --- Import shared helpers from the library-backed sibling script ---
+# These functions were already kept as script-specific in extract_presto_embeddings.py
 try:
     from extract_presto_embeddings import (
         check_dependencies,
@@ -80,31 +99,19 @@ try:
         get_openeo_connection,
         load_paddock_boundaries,
         get_paddock_extent_utm,
-        apply_global_clustering,
-        apply_local_clustering,
-        apply_global_pca,
-        apply_local_pca,
-        PRESTO_DIMENSIONS,
-        PRESTO_SCALE,
-        PRESTO_OFFSET,
-        PRESTO_NODATA,
-        OPENEO_URL,
     )
     ORIGINAL_AVAILABLE = True
 except ImportError:
     ORIGINAL_AVAILABLE = False
-    PRESTO_DIMENSIONS = 128
-    PRESTO_SCALE = 0.0002
-    PRESTO_OFFSET = -6
-    PRESTO_NODATA = 65535
-    OPENEO_URL = "https://openeo.dataspace.copernicus.eu"
+
+OPENEO_URL = "https://openeo.dataspace.copernicus.eu"
 
 # Output directories
 OUTPUT_DIR = Path("/media/malezainia1/LORENZO/outputs_sugal_25-26/satellite_embeddings/presto")
 OUTPUT_DIR_MAIN = Path("/media/malezainia1/LORENZO/outputs_sugal_25-26/satellite_embeddings")
 
 # ============================================================================
-# AGRICULTURAL WINDOWS for Orobanche detection in tomato (Chile, ~34°S)
+# AGRICULTURAL WINDOWS for Orobanche detection in tomato (Chile, ~34S)
 # ============================================================================
 # Based on literature review:
 #   - Diaz et al. (2006): O. ramosa emergence at 550 GDD in Chile
@@ -344,6 +351,8 @@ def raster_to_grid_embeddings_custom(
     Convert Presto embedding raster to 10m grid cells.
 
     Handles both standard (128-band) and time-pooled (N*128-band) rasters.
+    This function is kept script-specific because of the time-pooling logic
+    which has no library equivalent.
 
     Args:
         raster_path: Path to GeoTIFF with embedding bands
@@ -464,6 +473,51 @@ def raster_to_grid_embeddings_custom(
 
     gdf['paddock'] = paddock_name
     return gdf
+
+
+# --- Thin CLI wrappers around library clustering/PCA ---
+# These add logging and delegate to the library functions.
+
+def apply_global_clustering(gdf, n_clusters):
+    """Global clustering wrapper around library function."""
+    print(f"  Applying global clustering (K={n_clusters})...")
+    return _lib_apply_clustering(gdf, n_clusters=n_clusters, scope="global")
+
+
+def apply_local_clustering(gdf, n_clusters):
+    """Per-paddock clustering wrapper around library function."""
+    print(f"  Applying local (per-paddock) clustering (K={n_clusters})...")
+    result = gdf.copy()
+    for paddock in result['paddock'].unique():
+        mask = result['paddock'] == paddock
+        subset = result[mask].copy()
+        subset = _lib_apply_clustering(subset, n_clusters=n_clusters, scope="local")
+        # Copy local cluster column back
+        col_name = f"cluster_local_{n_clusters}"
+        if col_name in subset.columns:
+            result.loc[mask, col_name] = subset[col_name].values
+    return result
+
+
+def apply_global_pca(gdf):
+    """Global PCA wrapper around library function."""
+    print(f"  Applying global PCA...")
+    return _lib_apply_pca(gdf, n_components=3, scope="global")
+
+
+def apply_local_pca(gdf):
+    """Per-paddock PCA wrapper around library function."""
+    print(f"  Applying local (per-paddock) PCA...")
+    result = gdf.copy()
+    for paddock in result['paddock'].unique():
+        mask = result['paddock'] == paddock
+        subset = result[mask].copy()
+        subset = _lib_apply_pca(subset, n_components=3, scope="local")
+        # Copy local PCA columns back
+        for col in subset.columns:
+            if col.startswith("pca_local_"):
+                result.loc[mask, col] = subset[col].values
+    return result
 
 
 def print_available_windows():

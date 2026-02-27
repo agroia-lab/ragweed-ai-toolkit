@@ -86,8 +86,20 @@ except ImportError:
 _script_dir = Path(__file__).resolve().parent
 PROJECT_ROOT = _script_dir.parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
+sys.path.insert(0, str(PROJECT_ROOT / "src"))
 
 from scripts.utils.paths import get_paths, get_external_drive
+
+# --- Library imports (replacing internal duplicates) ---
+from ragweed_toolkit.satellite.ndvi import (
+    compute_ndvi_statistics,
+    compute_ndvi_slope,
+    compute_date_of_max,
+    export_ndvi_stats as _lib_export_ndvi_stats,
+    extract_raster_to_grid,
+    create_risk_zones,
+    CROP_SEASON_WINDOWS,
+)
 
 # Get paths from config
 _paths = get_paths()
@@ -104,15 +116,8 @@ EE_PROJECT = "gen-lang-client-0195046178"
 # Grid settings
 GRID_SIZE = 10  # meters (matches Sentinel-2 resolution)
 
-# Season windows (crop season: Oct 1 - Mar 31)
-SEASON_WINDOWS = {
-    "25-26": ("2025-10-01", "2026-03-31"),
-    "24-25": ("2024-10-01", "2025-03-31"),
-    "23-24": ("2023-10-01", "2024-03-31"),
-    "22-23": ("2022-10-01", "2023-03-31"),
-    "21-22": ("2021-10-01", "2022-03-31"),
-    "20-21": ("2020-10-01", "2021-03-31"),
-}
+# Use library season windows
+SEASON_WINDOWS = CROP_SEASON_WINDOWS
 
 # Sub-season periods for temporal statistics
 SUBSEASON_PERIODS = {
@@ -120,11 +125,6 @@ SUBSEASON_PERIODS = {
     "peak": (12, 1),        # Dec-Jan: Peak growth
     "late": (2, 3),         # Feb-Mar: Senescence
 }
-
-# Cloud mask values from SCL band
-# 0=No data, 1=Saturated, 2=Dark, 3=Shadow, 4=Vegetation, 5=Bare soil,
-# 6=Water, 7=Unclassified, 8=Cloud medium, 9=Cloud high, 10=Cirrus, 11=Snow
-SCL_CLEAR_VALUES = [4, 5, 6, 7, 11]  # Vegetation, bare soil, water, unclassified, snow
 
 
 def initialize_ee() -> bool:
@@ -195,212 +195,7 @@ def get_paddock_geometry_ee(gdf: gpd.GeoDataFrame) -> ee.Geometry:
     return ee.Geometry.Polygon([coords])
 
 
-def get_sentinel2_collection(
-    geometry: ee.Geometry,
-    start_date: str,
-    end_date: str,
-    cloud_pct: int = 30
-) -> ee.ImageCollection:
-    """Get cloud-filtered Sentinel-2 collection."""
-    collection = (
-        ee.ImageCollection("COPERNICUS/S2_SR_HARMONIZED")
-        .filterDate(start_date, end_date)
-        .filterBounds(geometry)
-        .filter(ee.Filter.lt("CLOUDY_PIXEL_PERCENTAGE", cloud_pct))
-    )
-    return collection
-
-
-def add_ndvi(image: ee.Image) -> ee.Image:
-    """Add NDVI band to image."""
-    ndvi = image.normalizedDifference(["B8", "B4"]).rename("NDVI")
-    return image.addBands(ndvi)
-
-
-def mask_clouds(image: ee.Image) -> ee.Image:
-    """Mask clouds using SCL band."""
-    scl = image.select("SCL")
-    clear_mask = scl.eq(4).Or(scl.eq(5)).Or(scl.eq(6)).Or(scl.eq(7)).Or(scl.eq(11))
-    return image.updateMask(clear_mask)
-
-
-def add_date_band(image: ee.Image) -> ee.Image:
-    """Add date band (days since epoch) for temporal analysis."""
-    date = ee.Date(image.get("system:time_start"))
-    days = date.difference(ee.Date("1970-01-01"), "day")
-    date_band = ee.Image.constant(days).rename("date").toFloat()
-    return image.addBands(date_band)
-
-
-def add_doy_band(image: ee.Image) -> ee.Image:
-    """Add day-of-year band."""
-    date = ee.Date(image.get("system:time_start"))
-    doy = date.getRelative("day", "year")
-    doy_band = ee.Image.constant(doy).rename("doy").toFloat()
-    return image.addBands(doy_band)
-
-
-def add_month_band(image: ee.Image) -> ee.Image:
-    """Add month band for sub-season filtering."""
-    date = ee.Date(image.get("system:time_start"))
-    month = date.get("month")
-    month_band = ee.Image.constant(month).rename("month").toInt()
-    return image.addBands(month_band)
-
-
-def compute_ndvi_statistics(
-    geometry: ee.Geometry,
-    start_date: str,
-    end_date: str,
-    cloud_pct: int = 30
-) -> ee.Image:
-    """
-    Compute NDVI time series statistics for a region.
-
-    Returns a multi-band image with:
-    - ndvi_min, ndvi_max, ndvi_mean, ndvi_median, ndvi_std
-    - ndvi_range, ndvi_count, ndvi_cv
-    - ndvi_p10, ndvi_p90 (percentiles)
-    - ndvi_early, ndvi_peak, ndvi_late (sub-season means)
-    """
-    # Get collection
-    collection = get_sentinel2_collection(geometry, start_date, end_date, cloud_pct)
-
-    # Process: mask clouds, add NDVI
-    processed = (
-        collection
-        .map(mask_clouds)
-        .map(add_ndvi)
-        .map(add_month_band)
-        .select(["NDVI", "month"])
-    )
-
-    # Basic statistics (all cast to Float for consistent export)
-    ndvi_min = processed.select("NDVI").reduce(ee.Reducer.min()).toFloat().rename("ndvi_min")
-    ndvi_max = processed.select("NDVI").reduce(ee.Reducer.max()).toFloat().rename("ndvi_max")
-    ndvi_mean = processed.select("NDVI").reduce(ee.Reducer.mean()).toFloat().rename("ndvi_mean")
-    ndvi_median = processed.select("NDVI").reduce(ee.Reducer.median()).toFloat().rename("ndvi_median")
-    ndvi_std = processed.select("NDVI").reduce(ee.Reducer.stdDev()).toFloat().rename("ndvi_std")
-    ndvi_count = processed.select("NDVI").reduce(ee.Reducer.count()).toFloat().rename("ndvi_count")
-
-    # Percentiles (cast to Float for consistent export)
-    ndvi_p10 = processed.select("NDVI").reduce(ee.Reducer.percentile([10])).toFloat().rename("ndvi_p10")
-    ndvi_p90 = processed.select("NDVI").reduce(ee.Reducer.percentile([90])).toFloat().rename("ndvi_p90")
-
-    # Derived statistics (already Float from Float operations)
-    ndvi_range = ndvi_max.subtract(ndvi_min).toFloat().rename("ndvi_range")
-    ndvi_cv = ndvi_std.divide(ndvi_mean).toFloat().rename("ndvi_cv")
-
-    # Sub-season means (Oct-Nov, Dec-Jan, Feb-Mar) - cast to Float
-    # Early season: Oct (10), Nov (11)
-    early_filter = processed.filter(
-        ee.Filter.Or(ee.Filter.eq("month", 10), ee.Filter.eq("month", 11))
-    )
-    ndvi_early = early_filter.select("NDVI").reduce(ee.Reducer.mean()).toFloat().rename("ndvi_early")
-
-    # Peak season: Dec (12), Jan (1)
-    peak_filter = processed.filter(
-        ee.Filter.Or(ee.Filter.eq("month", 12), ee.Filter.eq("month", 1))
-    )
-    ndvi_peak = peak_filter.select("NDVI").reduce(ee.Reducer.mean()).toFloat().rename("ndvi_peak")
-
-    # Late season: Feb (2), Mar (3)
-    late_filter = processed.filter(
-        ee.Filter.Or(ee.Filter.eq("month", 2), ee.Filter.eq("month", 3))
-    )
-    ndvi_late = late_filter.select("NDVI").reduce(ee.Reducer.mean()).toFloat().rename("ndvi_late")
-
-    # Decline rate: (peak - late) / peak
-    ndvi_decline = ndvi_peak.subtract(ndvi_late).divide(ndvi_peak).toFloat().rename("ndvi_decline")
-
-    # Combine all bands
-    result = (
-        ndvi_min
-        .addBands(ndvi_max)
-        .addBands(ndvi_mean)
-        .addBands(ndvi_median)
-        .addBands(ndvi_std)
-        .addBands(ndvi_count)
-        .addBands(ndvi_range)
-        .addBands(ndvi_cv)
-        .addBands(ndvi_p10)
-        .addBands(ndvi_p90)
-        .addBands(ndvi_early)
-        .addBands(ndvi_peak)
-        .addBands(ndvi_late)
-        .addBands(ndvi_decline)
-    )
-
-    return result
-
-
-def compute_ndvi_slope(
-    geometry: ee.Geometry,
-    start_date: str,
-    end_date: str,
-    cloud_pct: int = 30
-) -> ee.Image:
-    """
-    Compute linear trend (slope) of NDVI over time.
-
-    Uses linear regression: NDVI = slope * time + intercept
-    Positive slope = improving, Negative slope = declining
-    """
-    collection = get_sentinel2_collection(geometry, start_date, end_date, cloud_pct)
-
-    processed = (
-        collection
-        .map(mask_clouds)
-        .map(add_ndvi)
-        .map(add_date_band)
-        .select(["NDVI", "date"])
-    )
-
-    # Linear fit: dependent=NDVI, independent=date
-    linear_fit = processed.reduce(ee.Reducer.linearFit())
-
-    # Scale slope to "per month" (multiply by ~30 days) - cast to Float for consistent export
-    slope = linear_fit.select("scale").multiply(30).toFloat().rename("ndvi_slope")
-    intercept = linear_fit.select("offset").toFloat().rename("ndvi_intercept")
-
-    return slope.addBands(intercept)
-
-
-def compute_date_of_max(
-    geometry: ee.Geometry,
-    start_date: str,
-    end_date: str,
-    cloud_pct: int = 30
-) -> ee.Image:
-    """
-    Compute the day-of-year when maximum NDVI occurred.
-
-    Early peak (DOY < 365 in Oct-Dec) may indicate stunted growth.
-    """
-    collection = get_sentinel2_collection(geometry, start_date, end_date, cloud_pct)
-
-    processed = (
-        collection
-        .map(mask_clouds)
-        .map(add_ndvi)
-        .map(add_doy_band)
-    )
-
-    # Get max NDVI and corresponding DOY
-    def add_ndvi_doy(image):
-        return image.addBands(
-            image.select("doy").multiply(image.select("NDVI").gt(-9999))
-        )
-
-    with_doy = processed.map(add_ndvi_doy)
-
-    # Find image with max NDVI using qualityMosaic
-    max_image = with_doy.qualityMosaic("NDVI")
-    date_of_max = max_image.select("doy").toFloat().rename("ndvi_date_max")
-
-    return date_of_max
-
-
+# --- Thin CLI wrapper that adds logging around the library export function ---
 def export_ndvi_stats_to_drive(
     geometry: ee.Geometry,
     start_date: str,
@@ -410,7 +205,7 @@ def export_ndvi_stats_to_drive(
     folder: str = "ndvi_stats_exports"
 ) -> ee.batch.Task:
     """
-    Export NDVI statistics to Google Drive.
+    Export NDVI statistics to Google Drive (wrapper around library function).
 
     Returns the export task.
     """
@@ -419,45 +214,24 @@ def export_ndvi_stats_to_drive(
     print(f"{'='*60}")
     print(f"  Period: {start_date} to {end_date}")
 
-    # Compute all statistics
-    print("  Computing basic statistics...")
-    stats = compute_ndvi_statistics(geometry, start_date, end_date)
-
-    print("  Computing linear trend...")
-    slope = compute_ndvi_slope(geometry, start_date, end_date)
-
-    print("  Computing date of maximum...")
-    date_max = compute_date_of_max(geometry, start_date, end_date)
-
-    # Combine all
-    result = stats.addBands(slope).addBands(date_max)
-
-    # File name
-    safe_name = paddock_name.replace(" ", "_").replace(",", "")
-    filename = f"ndvi_stats_{season_label}_{safe_name}"
-
-    print(f"  Starting export task: {filename}")
-
-    # Export to Drive
-    task = ee.batch.Export.image.toDrive(
-        image=result,
-        description=filename,
-        folder=folder,
-        fileNamePrefix=filename,
-        region=geometry,
-        scale=10,
-        crs="EPSG:32719",
-        maxPixels=1e9,
-        fileFormat="GeoTIFF"
+    print("  Computing statistics, slope, and date of maximum...")
+    task = _lib_export_ndvi_stats(
+        geometry, start_date, end_date, paddock_name,
+        drive_folder=folder,
+        season_label=season_label,
     )
 
-    task.start()
+    safe_name = paddock_name.replace(" ", "_").replace(",", "")
+    filename = f"ndvi_stats_{season_label}_{safe_name}"
+    print(f"  Export task started: {filename}")
     print(f"  Task ID: {task.id}")
     print(f"  Status: {task.status()['state']}")
 
     return task
 
 
+# TODO: Library has ragweed_toolkit.satellite.ndvi._generate_grid (private).
+# The generate_grid function below is script-specific but equivalent.
 def generate_grid(geometry, cell_size: int = 10) -> gpd.GeoDataFrame:
     """Generate a grid of cells over a geometry."""
     minx, miny, maxx, maxy = geometry.bounds
@@ -484,78 +258,6 @@ def generate_grid(geometry, cell_size: int = 10) -> gpd.GeoDataFrame:
         'cell_id': cell_ids,
         'geometry': cells
     }, crs="EPSG:32719")
-
-
-def extract_raster_to_grid(
-    raster_path: Path,
-    paddock_gdf: gpd.GeoDataFrame,
-    paddock_name: str
-) -> gpd.GeoDataFrame:
-    """
-    Extract raster values to 10m grid cells.
-
-    Args:
-        raster_path: Path to multi-band GeoTIFF with NDVI statistics
-        paddock_gdf: Paddock boundary GeoDataFrame
-        paddock_name: Name of paddock
-
-    Returns:
-        GeoDataFrame with cell geometries and statistic columns
-    """
-    if not RASTERIO_AVAILABLE:
-        print("Error: rasterio not available")
-        return gpd.GeoDataFrame()
-
-    print(f"\n  Extracting raster to grid for {paddock_name}...")
-
-    with rasterio.open(raster_path) as src:
-        # Get band names from descriptions or use defaults
-        band_names = list(src.descriptions) if src.descriptions[0] else [
-            "ndvi_min", "ndvi_max", "ndvi_mean", "ndvi_median", "ndvi_std",
-            "ndvi_count", "ndvi_range", "ndvi_cv", "ndvi_p10", "ndvi_p90",
-            "ndvi_early", "ndvi_peak", "ndvi_late", "ndvi_decline",
-            "ndvi_slope", "ndvi_intercept", "ndvi_date_max"
-        ]
-
-        print(f"    Raster bands: {src.count}")
-        print(f"    Raster CRS: {src.crs}")
-
-        # Ensure paddock is in raster CRS
-        if paddock_gdf.crs != src.crs:
-            paddock_gdf = paddock_gdf.to_crs(src.crs)
-
-        paddock_geom = paddock_gdf.unary_union
-
-        # Generate grid
-        grid = generate_grid(paddock_geom, GRID_SIZE)
-        print(f"    Generated {len(grid)} grid cells")
-
-        # Get centroids for sampling
-        centroids = grid.geometry.centroid
-
-        # Extract values at centroids
-        coords = [(p.x, p.y) for p in centroids]
-        values = list(src.sample(coords))
-
-        # Build DataFrame
-        data = {'cell_id': grid['cell_id'].values}
-        for i, band_name in enumerate(band_names[:src.count]):
-            data[band_name] = [v[i] if not np.isnan(v[i]) and v[i] != src.nodata else np.nan
-                               for v in values]
-
-        # Create result GeoDataFrame
-        result = grid.copy()
-        for col, vals in data.items():
-            if col != 'cell_id':
-                result[col] = vals
-
-        # Add metadata
-        result['paddock'] = paddock_name
-
-        valid_count = result['ndvi_mean'].notna().sum() if 'ndvi_mean' in result.columns else 0
-        print(f"    Valid cells: {valid_count}/{len(result)}")
-
-        return result
 
 
 def apply_clustering(
@@ -616,64 +318,6 @@ def apply_clustering(
 
         gdf.loc[valid_mask, col_name] = labels.astype(int)
         print(f"  Added cluster_{k} ({k} zones)")
-
-    return gdf
-
-
-def create_orobanche_risk_zones(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
-    """
-    Create orobanche risk classification based on NDVI patterns.
-
-    Risk levels based on expected signatures:
-    - High risk: Low ndvi_max, high ndvi_std, negative slope, high decline
-    - Medium risk: Moderate values
-    - Low risk: High ndvi_max, low ndvi_std, stable/positive slope
-    """
-    if 'ndvi_max' not in gdf.columns:
-        return gdf
-
-    print("\nCreating orobanche risk zones...")
-
-    # Initialize risk score
-    gdf['risk_score'] = 0.0
-    valid_mask = gdf['ndvi_max'].notna()
-
-    if valid_mask.sum() == 0:
-        return gdf
-
-    # Score components (normalized 0-1, higher = more risk)
-    for col, weight, invert in [
-        ('ndvi_max', 0.3, True),       # Lower max = higher risk
-        ('ndvi_std', 0.2, False),      # Higher std = higher risk
-        ('ndvi_slope', 0.25, True),    # Negative slope = higher risk
-        ('ndvi_decline', 0.25, False), # Higher decline = higher risk
-    ]:
-        if col in gdf.columns:
-            vals = gdf.loc[valid_mask, col].values
-            # Normalize to 0-1
-            vmin, vmax = np.nanmin(vals), np.nanmax(vals)
-            if vmax > vmin:
-                normalized = (vals - vmin) / (vmax - vmin)
-                if invert:
-                    normalized = 1 - normalized
-                gdf.loc[valid_mask, 'risk_score'] += normalized * weight
-
-    # Classify into risk zones
-    gdf['risk_zone'] = 'Unknown'
-    risk_vals = gdf.loc[valid_mask, 'risk_score']
-
-    # Quantile-based classification
-    q33 = risk_vals.quantile(0.33)
-    q66 = risk_vals.quantile(0.66)
-
-    gdf.loc[valid_mask & (gdf['risk_score'] <= q33), 'risk_zone'] = 'Low'
-    gdf.loc[valid_mask & (gdf['risk_score'] > q33) & (gdf['risk_score'] <= q66), 'risk_zone'] = 'Medium'
-    gdf.loc[valid_mask & (gdf['risk_score'] > q66), 'risk_zone'] = 'High'
-
-    # Summary
-    for zone in ['Low', 'Medium', 'High']:
-        count = (gdf['risk_zone'] == zone).sum()
-        print(f"  {zone} risk: {count} cells")
 
     return gdf
 
@@ -855,7 +499,10 @@ Available seasons:
 
         for paddock_name in boundaries['paddock'].unique():
             paddock_gdf = boundaries[boundaries['paddock'] == paddock_name]
-            result = extract_raster_to_grid(raster_path, paddock_gdf, paddock_name)
+            result = extract_raster_to_grid(
+                str(raster_path), paddock_gdf, paddock_name,
+                grid_size=GRID_SIZE,
+            )
             if len(result) > 0:
                 all_results.append(result)
 
@@ -879,7 +526,10 @@ Available seasons:
                 raster_path = raster_files[0]
                 print(f"\nProcessing: {raster_path.name}")
                 paddock_gdf = boundaries[boundaries['paddock'] == paddock_name]
-                result = extract_raster_to_grid(raster_path, paddock_gdf, paddock_name)
+                result = extract_raster_to_grid(
+                    str(raster_path), paddock_gdf, paddock_name,
+                    grid_size=GRID_SIZE,
+                )
                 if len(result) > 0:
                     all_results.append(result)
             else:
@@ -904,9 +554,14 @@ Available seasons:
         clusters = args.cluster if args.cluster else [3, 5, 7]
         combined = apply_clustering(combined, clusters)
 
-    # Create risk zones
+    # Create risk zones (using library function)
     if args.risk_zones:
-        combined = create_orobanche_risk_zones(combined)
+        print("\nCreating orobanche risk zones...")
+        combined = create_risk_zones(combined)
+        # Print summary
+        for zone in ['Low', 'Medium', 'High']:
+            count = (combined['risk_zone'] == zone).sum()
+            print(f"  {zone} risk: {count} cells")
 
     # Add X, Y coordinates (centroid of each cell)
     combined['x'] = combined.geometry.centroid.x

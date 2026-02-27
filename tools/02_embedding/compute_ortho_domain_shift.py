@@ -55,6 +55,13 @@ from typing import Dict, List, Optional, Tuple
 import numpy as np
 import pandas as pd
 
+from ragweed_toolkit.embeddings import (
+    compute_mmd as _lib_compute_mmd,
+    permutation_test as _lib_permutation_test,
+    deployment_gate,
+    mmd_bar_chart as _lib_mmd_bar_chart,
+)
+
 warnings.filterwarnings("ignore")
 
 # Short display names for the 9 reference databases
@@ -85,48 +92,8 @@ DEPLOYMENT_THRESHOLDS = [
 
 
 def compute_mmd(X: np.ndarray, Y: np.ndarray, gamma: Optional[float] = None) -> float:
-    """
-    Compute MMD (Maximum Mean Discrepancy) between two sets of embeddings.
-
-    Uses a Gaussian RBF kernel with the median heuristic for bandwidth
-    selection (if gamma not provided). Returns MMD (not squared).
-
-    Args:
-        X: First set of embeddings, shape (n, d)
-        Y: Second set of embeddings, shape (m, d)
-        gamma: RBF kernel bandwidth. If None, uses median heuristic.
-
-    Returns:
-        MMD value (float, >= 0). Higher means more different distributions.
-    """
-    from sklearn.metrics.pairwise import rbf_kernel
-
-    if gamma is None:
-        from sklearn.metrics.pairwise import euclidean_distances
-
-        XY = np.vstack([X, Y])
-        dists = euclidean_distances(XY, XY)
-        median_dist = np.median(dists[dists > 0])
-        gamma = 1.0 / (2 * median_dist ** 2)
-
-    n = len(X)
-    m = len(Y)
-
-    Kxx = rbf_kernel(X, X, gamma=gamma)
-    Kyy = rbf_kernel(Y, Y, gamma=gamma)
-    Kxy = rbf_kernel(X, Y, gamma=gamma)
-
-    # Unbiased MMD^2 estimator
-    np.fill_diagonal(Kxx, 0)
-    np.fill_diagonal(Kyy, 0)
-
-    mmd2 = (
-        Kxx.sum() / (n * (n - 1))
-        + Kyy.sum() / (m * (m - 1))
-        - 2 * Kxy.sum() / (n * m)
-    )
-
-    return max(0, mmd2) ** 0.5  # Return MMD (not squared)
+    """Delegate to ragweed_toolkit.embeddings.compute_mmd."""
+    return _lib_compute_mmd(X, Y, gamma=gamma)
 
 
 def compute_mmd_with_permutation_test(
@@ -135,52 +102,8 @@ def compute_mmd_with_permutation_test(
     gamma: Optional[float] = None,
     n_permutations: int = 1000,
 ) -> Tuple[float, float]:
-    """
-    Compute MMD with a permutation test for statistical significance.
-
-    Under H0 (same distribution), the MMD is computed on random shuffles
-    of the combined data. The p-value is the fraction of permuted MMDs
-    that are >= the observed MMD.
-
-    Args:
-        X: First set of embeddings, shape (n, d)
-        Y: Second set of embeddings, shape (m, d)
-        gamma: RBF kernel bandwidth
-        n_permutations: Number of permutations for the significance test
-
-    Returns:
-        Tuple of (mmd_value, p_value)
-    """
-    from sklearn.metrics.pairwise import euclidean_distances, rbf_kernel
-
-    # Compute gamma once using combined data
-    if gamma is None:
-        XY = np.vstack([X, Y])
-        dists = euclidean_distances(XY, XY)
-        median_dist = np.median(dists[dists > 0])
-        gamma = 1.0 / (2 * median_dist ** 2)
-
-    # Observed MMD
-    observed_mmd = compute_mmd(X, Y, gamma=gamma)
-
-    # Permutation test
-    combined = np.vstack([X, Y])
-    n = len(X)
-    total = len(combined)
-    rng = np.random.RandomState(42)
-
-    count_ge = 0
-    for _ in range(n_permutations):
-        perm = rng.permutation(total)
-        X_perm = combined[perm[:n]]
-        Y_perm = combined[perm[n:]]
-        perm_mmd = compute_mmd(X_perm, Y_perm, gamma=gamma)
-        if perm_mmd >= observed_mmd:
-            count_ge += 1
-
-    p_value = (count_ge + 1) / (n_permutations + 1)  # +1 for continuity correction
-
-    return observed_mmd, p_value
+    """Delegate to ragweed_toolkit.embeddings.permutation_test."""
+    return _lib_permutation_test(X, Y, gamma=gamma, n_permutations=n_permutations)
 
 
 def compute_tile_distances(
@@ -202,23 +125,9 @@ def compute_tile_distances(
 
 
 def get_deployment_recommendation(mmd_value: float) -> Tuple[str, str]:
-    """
-    Get deployment recommendation based on MMD value.
-
-    Returns:
-        Tuple of (recommendation_text, risk_level)
-    """
-    for threshold, recommendation in DEPLOYMENT_THRESHOLDS:
-        if mmd_value < threshold:
-            if threshold == 0.15:
-                return recommendation, "LOW"
-            elif threshold == 0.30:
-                return recommendation, "MODERATE"
-            elif threshold == 0.45:
-                return recommendation, "SIGNIFICANT"
-            else:
-                return recommendation, "HIGH"
-    return DEPLOYMENT_THRESHOLDS[-1][1], "HIGH"
+    """Delegate to ragweed_toolkit.embeddings.deployment_gate."""
+    result = deployment_gate(mmd_value)
+    return result.recommendation, result.tier
 
 
 # ============================================================================
@@ -306,102 +215,16 @@ def load_reference_embeddings(
 def create_mmd_bar_chart(
     mmd_results: List[Dict], overall_mmd: float, output_path: Path
 ) -> None:
-    """
-    Create a bar chart comparing MMD values across reference databases.
-
-    Args:
-        mmd_results: List of dicts with 'database', 'mmd', 'n_images' keys
-        overall_mmd: MMD against combined reference set
-        output_path: Path to save the PNG
-    """
-    try:
-        import matplotlib
-        matplotlib.use("Agg")
-        import matplotlib.pyplot as plt
-    except ImportError:
-        print("  WARNING: matplotlib not available, skipping bar chart")
-        return
-
-    # Sort by MMD
-    results_sorted = sorted(mmd_results, key=lambda x: x["mmd"])
-
-    databases = [r["database"] for r in results_sorted]
-    mmd_values = [r["mmd"] for r in results_sorted]
-    n_images = [r["n_images"] for r in results_sorted]
-
-    # Color by Chilean vs International
+    """Delegate to ragweed_toolkit.embeddings.mmd_bar_chart."""
+    # Convert results list to the dict format expected by the library
+    database_mmds = {r["database"]: r["mmd"] for r in mmd_results}
     chilean_dbs = {"CL_Seba", "CL_Alberto", "CL_StaRosa"}
-    colors = ["#2171b5" if db in chilean_dbs else "#e6550d" for db in databases]
-
-    fig, ax = plt.subplots(figsize=(10, 6))
-
-    bars = ax.barh(
-        databases, mmd_values, color=colors, edgecolor="white", linewidth=0.5, height=0.6
+    _lib_mmd_bar_chart(
+        database_mmds,
+        overall_mmd,
+        output_path=str(output_path),
+        chilean_dbs=chilean_dbs,
     )
-
-    # Annotate bars with image counts
-    for i, (mmd_val, n_img) in enumerate(zip(mmd_values, n_images)):
-        ax.text(
-            mmd_val + 0.008,
-            i,
-            f"MMD={mmd_val:.3f} (n={n_img})",
-            va="center",
-            ha="left",
-            fontsize=9,
-            color="#333333",
-        )
-
-    # Threshold lines
-    for threshold, label in DEPLOYMENT_THRESHOLDS[:-1]:
-        ax.axvline(
-            threshold, color="#999999", linestyle="--", linewidth=0.8, alpha=0.7
-        )
-        ax.text(
-            threshold,
-            len(databases) - 0.3,
-            f"{threshold}",
-            fontsize=8,
-            color="#666666",
-            ha="center",
-        )
-
-    # Overall MMD line
-    ax.axvline(
-        overall_mmd, color="#c0392b", linestyle="-", linewidth=2, alpha=0.8
-    )
-    ax.text(
-        overall_mmd + 0.01,
-        -0.5,
-        f"Overall MMD = {overall_mmd:.3f}",
-        fontsize=10,
-        color="#c0392b",
-        fontweight="bold",
-    )
-
-    ax.set_xlabel("MMD (Maximum Mean Discrepancy)", fontsize=12)
-    ax.set_title(
-        "Domain Shift: Orthomosaic Tiles vs Reference Databases",
-        fontsize=14,
-        fontweight="bold",
-        pad=12,
-    )
-    ax.tick_params(axis="both", labelsize=10)
-    ax.set_xlim(0, max(mmd_values) * 1.3)
-    ax.spines["top"].set_visible(False)
-    ax.spines["right"].set_visible(False)
-
-    # Legend
-    import matplotlib.patches as mpatches
-    legend_handles = [
-        mpatches.Patch(color="#2171b5", label="Chilean"),
-        mpatches.Patch(color="#e6550d", label="International"),
-    ]
-    ax.legend(handles=legend_handles, fontsize=10, loc="lower right", framealpha=0.9)
-
-    plt.tight_layout()
-    fig.savefig(str(output_path), dpi=200, bbox_inches="tight", facecolor="white")
-    plt.close(fig)
-    print(f"  Saved: {output_path}")
 
 
 def create_joint_umap(

@@ -33,6 +33,11 @@ from rasterio.errors import RasterioIOError
 import pygeoda
 from datetime import datetime
 
+from ragweed_toolkit.spatial import LISA_COLORS, QUADRANT_MAP, lisa_summary
+
+# Mapping from pygeoda cluster codes to ragweed_toolkit LISA keys
+_PYGEODA_TO_LISA_KEY = {0: "NS", 1: "HH", 2: "LL", 3: "LH", 4: "HL"}
+
 
 # =============================================================================
 # Configuration
@@ -72,15 +77,12 @@ PADDOCK_TO_RASTER = {
     "Santa Ines": "santa_ines",
 }
 
-# Bivariate LISA cluster labels
-BIMORAN_LABELS = {
-    0: 'Not Significant',
-    1: 'High-High',  # High Orobanche, High Soil Index
-    2: 'Low-Low',    # Low Orobanche, Low Soil Index
-    3: 'Low-High',   # Low Orobanche, High Soil Index
-    4: 'High-Low',   # High Orobanche, Low Soil Index
-    5: 'Isolated'
-}
+# Bivariate LISA cluster labels (derived from ragweed_toolkit.spatial.QUADRANT_MAP)
+_LABEL_EXPANSION = {"HH": "High-High", "LL": "Low-Low", "LH": "Low-High",
+                     "HL": "High-Low", "NS": "Not Significant"}
+BIMORAN_LABELS = {code: _LABEL_EXPANSION.get(key, "Isolated")
+                  for code, key in _PYGEODA_TO_LISA_KEY.items()}
+BIMORAN_LABELS[5] = 'Isolated'
 
 
 def get_paddock_prefix(paddock_name: str) -> str:
@@ -147,6 +149,8 @@ def sample_raster_at_points(gdf: gpd.GeoDataFrame, raster_path: Path) -> np.ndar
     return values
 
 
+# TODO: Replace with ragweed_toolkit.spatial.compute_bivariate_lisa when it
+# supports pygeoda KNN weights and NaN masking (currently esda + DistanceBand only)
 def run_bivariate_lisa(gdf: gpd.GeoDataFrame, y_col: str, x_col: str, k: int = 8) -> dict:
     """
     Run Bivariate Local Moran's I analysis.
@@ -225,9 +229,11 @@ def print_bivariate_summary(gdf: gpd.GeoDataFrame, soil_index: str, cluster_col:
         subset = gdf_valid[gdf_valid[cluster_col] == code]
         if len(subset) > 0:
             label = BIMORAN_LABELS.get(code, f'Type {code}')
+            lisa_key = _PYGEODA_TO_LISA_KEY.get(code, "NS")
+            color = LISA_COLORS.get(lisa_key, "#cccccc")
             pct = 100 * len(subset) / len(gdf_valid)
             mean_orara = subset['nr_orara'].mean()
-            print(f"    {label}: {len(subset)} pts ({pct:.1f}%), mean ORARA={mean_orara:.1f}")
+            print(f"    {label} [{color}]: {len(subset)} pts ({pct:.1f}%), mean ORARA={mean_orara:.1f}")
 
 
 def main():

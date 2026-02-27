@@ -72,6 +72,17 @@ import numpy as np
 from ultralytics import YOLO
 from ultralytics.utils.callbacks.base import add_integration_callbacks
 
+# ragweed_toolkit library imports
+from ragweed_toolkit.detection import TrainingConfig
+
+# TODO: Move GPUMonitor and RealTimeTrainingMonitor to ragweed_toolkit.detection
+# when API supports real-time training visualization.
+# The library's train() function handles basic training but this script adds:
+#   - GPU monitoring (GPUMonitor)
+#   - Real-time visualization (RealTimeTrainingMonitor)
+#   - Custom YOLO callbacks for live metric capture
+# These features are too specialized for the core library at this stage.
+
 
 # ==============================================================================
 # GPU MONITORING CLASS

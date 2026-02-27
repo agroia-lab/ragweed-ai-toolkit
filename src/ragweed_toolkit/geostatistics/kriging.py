@@ -196,3 +196,54 @@ def ordinary_kriging(
     )
 
     return result
+
+
+def main():
+    """CLI entry point for ordinary kriging interpolation."""
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description="Interpolate point observations using ordinary kriging with exponential variogram."
+    )
+    parser.add_argument("--points", required=True, help="GeoPackage/Shapefile with point observations")
+    parser.add_argument("--value-col", required=True, help="Column name to interpolate")
+    parser.add_argument("--boundary", required=True, help="GeoPackage/Shapefile with study area polygon")
+    parser.add_argument("--output", required=True, help="Output GeoPackage path for kriging grid")
+    parser.add_argument("--resolution", type=float, default=5.0, help="Grid cell size in metres (default: 5)")
+    parser.add_argument("--nugget", type=float, default=43066.5, help="Variogram nugget (default: 43066.5)")
+    parser.add_argument("--partial-sill", type=float, default=43066.5, help="Variogram partial sill (default: 43066.5)")
+    parser.add_argument("--range", type=float, default=81.2, dest="range_param",
+                        help="Variogram range in metres (default: 81.2)")
+    args = parser.parse_args()
+
+    gdf = gpd.read_file(args.points)
+    boundary = gpd.read_file(args.boundary)
+
+    print(f"Points: {len(gdf)} observations, column={args.value_col}")
+    print(f"Boundary: {len(boundary)} polygon(s)")
+    print(f"Variogram: nugget={args.nugget}, partial_sill={args.partial_sill}, range={args.range_param}m")
+    print(f"Grid resolution: {args.resolution}m")
+
+    result = ordinary_kriging(
+        gdf,
+        args.value_col,
+        boundary,
+        resolution=args.resolution,
+        nugget=args.nugget,
+        partial_sill=args.partial_sill,
+        range_param=args.range_param,
+    )
+
+    from pathlib import Path
+    out_path = Path(args.output)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    result.to_file(str(out_path), driver="GPKG")
+
+    print(f"\nKriging complete:")
+    print(f"  Grid cells: {len(result)}")
+    print(f"  Predicted range: {result['predicted'].min():.1f} - {result['predicted'].max():.1f}")
+    print(f"  Output: {out_path}")
+
+
+if __name__ == "__main__":
+    main()

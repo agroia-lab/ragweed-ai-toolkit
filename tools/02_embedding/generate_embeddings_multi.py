@@ -32,7 +32,6 @@ Output directory: /media/malezainia1/LORENZO/outputs_sugal_25-26/image_embedding
 import argparse
 import json
 import os
-import struct
 import sys
 import warnings
 from datetime import datetime
@@ -48,6 +47,16 @@ from PIL.ExifTags import GPSTAGS, TAGS
 from torch.utils.data import DataLoader, Dataset
 from torchvision import models, transforms
 from tqdm import tqdm
+
+# ragweed_toolkit library imports
+from ragweed_toolkit.embeddings import (
+    FeatureExtractor,
+    extract_embeddings,
+    default_transform,
+    reduce_embeddings,
+    umap_scatter,
+)
+from ragweed_toolkit.detection import extract_gps
 
 warnings.filterwarnings("ignore")
 
@@ -132,19 +141,9 @@ def _try_load_clip(device: str):
 # MODEL: RESNET50 BACKEND
 # ============================================================================
 
-
-class ResNet50Extractor(nn.Module):
-    """Extract features using pre-trained ResNet50 (2048-dim)."""
-
-    def __init__(self):
-        super().__init__()
-        base_model = models.resnet50(weights=models.ResNet50_Weights.IMAGENET1K_V2)
-        self.backbone = nn.Sequential(*list(base_model.children())[:-1])
-        self.embedding_dim = 2048
-
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        features = self.backbone(x)
-        return features.flatten(1)
+# ResNet50Extractor replaced by ragweed_toolkit.embeddings.FeatureExtractor.
+# Alias for backward compatibility in this script.
+ResNet50Extractor = None  # See FeatureExtractor("resnet50") from library
 
 
 # ============================================================================
@@ -258,31 +257,22 @@ class MultiSourceImageDataset(Dataset):
 
 def extract_embeddings_resnet(
     dataset: MultiSourceImageDataset,
-    model: ResNet50Extractor,
+    model: FeatureExtractor,
     batch_size: int,
     num_workers: int,
     device: str,
 ) -> np.ndarray:
-    """Extract embeddings using ResNet50."""
-    model = model.to(device).eval()
+    """Extract embeddings using ResNet50.
 
-    dataloader = DataLoader(
-        dataset,
+    Delegates to ragweed_toolkit.embeddings.extract_embeddings().
+    """
+    return extract_embeddings(
+        images=dataset,
+        model=model,
         batch_size=batch_size,
-        shuffle=False,
         num_workers=num_workers,
-        pin_memory=(device == "cuda"),
-        persistent_workers=(num_workers > 0),
+        device=device,
     )
-
-    embeddings = []
-    with torch.no_grad():
-        for images, indices in tqdm(dataloader, desc="ResNet50 embedding"):
-            images = images.to(device)
-            features = model(images)
-            embeddings.append(features.cpu().numpy())
-
-    return np.vstack(embeddings)
 
 
 def extract_embeddings_clip(
@@ -367,58 +357,22 @@ def reduce_dimensions(
     """
     Apply dimensionality reduction.
 
-    Performs intermediate PCA (50 dims) before UMAP/t-SNE when input
-    dimensionality exceeds 50.
+    Delegates to ragweed_toolkit.embeddings.reduce_embeddings() and returns
+    raw numpy coordinates.
     """
-    print(f"  Applying {method.upper()} -> {n_components}D ...")
-
-    working = embeddings.copy()
-
-    # Pre-reduce with PCA for UMAP/t-SNE
-    if method in ("umap", "tsne") and working.shape[1] > 50:
-        from sklearn.decomposition import PCA
-
-        n_pca = min(50, working.shape[0] - 1, working.shape[1])
-        print(f"    Pre-PCA: {working.shape[1]} -> {n_pca} dims")
-        pca = PCA(n_components=n_pca, random_state=42)
-        working = pca.fit_transform(working)
-        print(f"    PCA explained variance: {pca.explained_variance_ratio_.sum():.2%}")
-
-    if method == "umap":
-        import umap
-
-        reducer = umap.UMAP(
-            n_components=n_components,
-            n_neighbors=kwargs.get("n_neighbors", 15),
-            min_dist=kwargs.get("min_dist", 0.1),
-            metric="cosine",
-            random_state=42,
-            verbose=True,
-        )
-        return reducer.fit_transform(working)
-
-    elif method == "tsne":
-        from sklearn.manifold import TSNE
-
-        reducer = TSNE(
-            n_components=n_components,
-            perplexity=kwargs.get("perplexity", 30),
-            random_state=42,
-            verbose=1,
-            max_iter=1000,
-        )
-        return reducer.fit_transform(working)
-
-    elif method == "pca":
-        from sklearn.decomposition import PCA
-
-        reducer = PCA(n_components=n_components, random_state=42)
-        result = reducer.fit_transform(working)
-        print(f"    PCA explained variance: {reducer.explained_variance_ratio_.sum():.2%}")
-        return result
-
-    else:
-        raise ValueError(f"Unknown reduction method: {method}")
+    df = reduce_embeddings(
+        embeddings,
+        method=method,
+        n_components=n_components,
+        umap_n_neighbors=kwargs.get("n_neighbors", 15),
+        umap_min_dist=kwargs.get("min_dist", 0.1),
+        tsne_perplexity=kwargs.get("perplexity", 30),
+    )
+    prefix = method.lower()
+    cols = [f"{prefix}_x", f"{prefix}_y"]
+    if n_components >= 3:
+        cols.append(f"{prefix}_z")
+    return df[cols].values
 
 
 # ============================================================================
@@ -428,51 +382,11 @@ def reduce_dimensions(
 
 def _get_exif_gps(img_path: Path) -> Optional[Dict]:
     """
-    Extract GPS coordinates from an image's EXIF data using Pillow.
-    Returns dict with latitude, longitude, altitude (or None).
+    Extract GPS coordinates from an image's EXIF data.
+
+    Delegates to ragweed_toolkit.detection.extract_gps().
     """
-    try:
-        img = Image.open(img_path)
-        exif_data = img._getexif()
-        if exif_data is None:
-            return None
-
-        gps_info = {}
-        for tag_id, value in exif_data.items():
-            tag_name = TAGS.get(tag_id, tag_id)
-            if tag_name == "GPSInfo":
-                for gps_tag_id, gps_value in value.items():
-                    gps_tag_name = GPSTAGS.get(gps_tag_id, gps_tag_id)
-                    gps_info[gps_tag_name] = gps_value
-
-        if not gps_info:
-            return None
-
-        def _dms_to_decimal(dms, ref):
-            """Convert (degrees, minutes, seconds) + ref to decimal."""
-            d, m, s = [float(x) for x in dms]
-            decimal = d + m / 60 + s / 3600
-            if ref in ("S", "W"):
-                decimal = -decimal
-            return decimal
-
-        result = {}
-
-        if "GPSLatitude" in gps_info and "GPSLatitudeRef" in gps_info:
-            result["latitude"] = _dms_to_decimal(
-                gps_info["GPSLatitude"], gps_info["GPSLatitudeRef"]
-            )
-        if "GPSLongitude" in gps_info and "GPSLongitudeRef" in gps_info:
-            result["longitude"] = _dms_to_decimal(
-                gps_info["GPSLongitude"], gps_info["GPSLongitudeRef"]
-            )
-        if "GPSAltitude" in gps_info:
-            result["altitude"] = float(gps_info["GPSAltitude"])
-
-        return result if result else None
-
-    except Exception:
-        return None
+    return extract_gps(img_path)
 
 
 def extract_gps_metadata(
@@ -520,55 +434,22 @@ def create_visualization(
     title: str = "Embedding Visualization",
     output_path: str = "visualization.html",
 ):
-    """Create interactive plotly scatter plot (2D or 3D)."""
-    import plotly.express as px
+    """Create interactive plotly scatter plot (2D or 3D).
 
-    hover_cols = ["filename", "source_collection", "location", "source_type"]
-    hover_cols = [c for c in hover_cols if c in df.columns]
-
-    if z_col is not None:
-        fig = px.scatter_3d(
-            df,
-            x=x_col,
-            y=y_col,
-            z=z_col,
-            color=color_col,
-            hover_data=hover_cols,
-            title=title,
-            opacity=0.7,
-        )
-        fig.update_traces(marker=dict(size=3))
-    else:
-        fig = px.scatter(
-            df,
-            x=x_col,
-            y=y_col,
-            color=color_col,
-            hover_data=hover_cols,
-            title=title,
-            opacity=0.7,
-        )
-        fig.update_traces(marker=dict(size=4))
-
-    fig.update_layout(
-        template="plotly_white",
+    Delegates to ragweed_toolkit.embeddings.umap_scatter().
+    """
+    return umap_scatter(
+        df,
+        x_col=x_col,
+        y_col=y_col,
+        z_col=z_col,
+        color_col=color_col,
+        title=title,
+        output_path=output_path,
         width=1400,
         height=900,
-        legend=dict(yanchor="top", y=0.99, xanchor="left", x=1.02),
+        marker_size=4,
     )
-
-    fig.write_html(output_path)
-    print(f"  Saved: {output_path}")
-
-    # Try to save static PNG
-    png_path = output_path.replace(".html", ".png")
-    try:
-        fig.write_image(png_path, scale=2)
-        print(f"  Saved: {png_path}")
-    except Exception:
-        pass  # kaleido may not be installed
-
-    return fig
 
 
 def create_all_visualizations(df: pd.DataFrame, output_dir: Path):
@@ -756,7 +637,7 @@ def main():
             actual_model = "resnet50"
 
     if actual_model == "resnet50":
-        resnet_model = ResNet50Extractor()
+        resnet_model = FeatureExtractor("resnet50")
         embedding_dim = resnet_model.embedding_dim
         print(f"ResNet50 loaded, embedding_dim={embedding_dim}")
 
@@ -769,14 +650,8 @@ def main():
     print("STEP 1: Scanning images from all sources")
     print("-" * 70)
 
-    # Standard ImageNet transform for ResNet50
-    resnet_transform = transforms.Compose(
-        [
-            transforms.Resize((224, 224)),
-            transforms.ToTensor(),
-            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-        ]
-    )
+    # Standard ImageNet transform for ResNet50 (from ragweed_toolkit.embeddings)
+    resnet_transform = default_transform()
 
     # For CLIP with open_clip, the transform comes from the model
     # For CLIP with transformers, we handle PIL images directly

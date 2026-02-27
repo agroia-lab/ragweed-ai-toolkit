@@ -41,6 +41,19 @@ from sklearn.preprocessing import StandardScaler
 
 warnings.filterwarnings('ignore')
 
+# ---- Portable path resolution ----
+_script_dir = Path(__file__).resolve().parent
+_project_root = _script_dir.parent.parent
+sys.path.insert(0, str(_project_root))
+sys.path.insert(0, str(_project_root / "src"))
+
+# TODO: This script is entirely custom spatial visualization code (PCA false-color
+# composites, cluster maps, nested gridspec layouts). No library equivalents exist.
+# Future candidates for ragweed_toolkit.viz.maps:
+#   - plot_gdf_rgb_fast -> ragweed_toolkit.viz.maps.plot_embedding_rgb
+#   - plot_gdf_clusters_fast -> ragweed_toolkit.viz.maps.plot_cluster_map
+#   - compute_pca_rgb -> ragweed_toolkit.viz.scatter.pca_to_rgb
+
 # ============================================================
 # CONFIGURATION
 # ============================================================

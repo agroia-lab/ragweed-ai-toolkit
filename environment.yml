@@ -1,0 +1,19 @@
+name: ragweed-toolkit
+channels:
+  - conda-forge
+  - pytorch
+dependencies:
+  - python=3.10
+  - pytorch>=2.0
+  - torchvision>=0.15
+  - numpy>=1.24
+  - pandas>=2.0
+  - geopandas>=0.14
+  - matplotlib>=3.7
+  - scipy>=1.11
+  - scikit-learn>=1.3
+  - rasterio>=1.3
+  - jupyter
+  - pip
+  - pip:
+    - ragweed-ai-toolkit[all]

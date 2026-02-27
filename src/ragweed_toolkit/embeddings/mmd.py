@@ -233,3 +233,41 @@ def deployment_gate(mmd_value: float) -> DeploymentResult:
         recommendation=_THRESHOLDS[-1][2],
         mmd=mmd_value,
     )
+
+
+def main():
+    """CLI entry point for MMD domain shift analysis."""
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description="Compute MMD between two embedding sets and evaluate deployment readiness."
+    )
+    parser.add_argument("--source", required=True, help="Path to source embeddings .npy file")
+    parser.add_argument("--target", required=True, help="Path to target embeddings .npy file")
+    parser.add_argument("--permutations", type=int, default=1000,
+                        help="Number of permutations for p-value (default: 1000)")
+    parser.add_argument("--seed", type=int, default=42, help="Random seed (default: 42)")
+    args = parser.parse_args()
+
+    X = np.load(args.source)
+    Y = np.load(args.target)
+    print(f"Source: {X.shape}, Target: {Y.shape}")
+
+    print(f"Running permutation test ({args.permutations} permutations)...")
+    mmd_val, p_value = permutation_test(
+        X, Y,
+        n_permutations=args.permutations,
+        random_state=args.seed,
+    )
+
+    result = deployment_gate(mmd_val)
+
+    print(f"\nResults:")
+    print(f"  MMD = {mmd_val:.4f}")
+    print(f"  p-value = {p_value:.4f}")
+    print(f"  Tier: {result.tier.upper()}")
+    print(f"  Recommendation: {result.recommendation}")
+
+
+if __name__ == "__main__":
+    main()

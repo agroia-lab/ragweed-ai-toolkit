@@ -34,6 +34,15 @@ import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms, models
 
+# ragweed_toolkit library imports
+from ragweed_toolkit.embeddings import (
+    FeatureExtractor,
+    extract_embeddings,
+    default_transform,
+    reduce_embeddings,
+    umap_scatter,
+)
+
 # Suppress warnings
 warnings.filterwarnings('ignore')
 
@@ -66,45 +75,7 @@ CONFIG = {
     "device": "cuda" if torch.cuda.is_available() else "cpu",
 }
 
-# ============================================================================
-# FEATURE EXTRACTOR MODEL
-# ============================================================================
-
-class FeatureExtractor(nn.Module):
-    """
-    Extract features from images using pre-trained CNN backbone.
-    Uses global average pooling to get fixed-size embeddings.
-    """
-
-    def __init__(self, model_name: str = "resnet50"):
-        super().__init__()
-
-        if model_name == "resnet50":
-            base_model = models.resnet50(weights=models.ResNet50_Weights.IMAGENET1K_V2)
-            # Remove the final FC layer
-            self.backbone = nn.Sequential(*list(base_model.children())[:-1])
-            self.embedding_dim = 2048
-
-        elif model_name == "efficientnet_b0":
-            base_model = models.efficientnet_b0(weights=models.EfficientNet_B0_Weights.IMAGENET1K_V1)
-            self.backbone = nn.Sequential(*list(base_model.children())[:-1])
-            self.embedding_dim = 1280
-
-        elif model_name == "efficientnet_b2":
-            base_model = models.efficientnet_b2(weights=models.EfficientNet_B2_Weights.IMAGENET1K_V1)
-            self.backbone = nn.Sequential(*list(base_model.children())[:-1])
-            self.embedding_dim = 1408
-
-        else:
-            raise ValueError(f"Unknown model: {model_name}")
-
-        self.pool = nn.AdaptiveAvgPool2d(1)
-
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        features = self.backbone(x)
-        if len(features.shape) == 4:
-            features = self.pool(features)
-        return features.flatten(1)
+# FeatureExtractor is now imported from ragweed_toolkit.embeddings
 
 
 # ============================================================================
@@ -198,44 +169,7 @@ class ImageDataset(Dataset):
             return Image.new('RGB', (224, 224)), idx
 
 
-# ============================================================================
-# EMBEDDING EXTRACTION
-# ============================================================================
-
-def extract_embeddings(
-    dataset: ImageDataset,
-    model: FeatureExtractor,
-    batch_size: int = 32,
-    num_workers: int = 4,
-    device: str = "cuda"
-) -> np.ndarray:
-    """
-    Extract embeddings for all images in dataset.
-
-    Returns:
-        embeddings: numpy array of shape (n_images, embedding_dim)
-    """
-    model = model.to(device)
-    model.eval()
-
-    dataloader = DataLoader(
-        dataset,
-        batch_size=batch_size,
-        shuffle=False,
-        num_workers=num_workers,
-        pin_memory=True if device == "cuda" else False
-    )
-
-    embeddings = []
-
-    print(f"Extracting embeddings using {device}...")
-    with torch.no_grad():
-        for images, indices in tqdm(dataloader, desc="Processing batches"):
-            images = images.to(device)
-            features = model(images)
-            embeddings.append(features.cpu().numpy())
-
-    return np.vstack(embeddings)
+# extract_embeddings is now imported from ragweed_toolkit.embeddings
 
 
 # ============================================================================
@@ -251,59 +185,32 @@ def reduce_dimensions(
     """
     Apply dimensionality reduction to embeddings.
 
+    Delegates to ragweed_toolkit.embeddings.reduce_embeddings() for the core
+    computation. Returns raw numpy coordinates (not the full DataFrame).
+
     Args:
         embeddings: Input embeddings (n_samples, n_features)
         method: "umap", "tsne", or "pca"
         n_components: Output dimensions (2 or 3)
-        **kwargs: Additional parameters for the method
+        **kwargs: Additional parameters (n_neighbors, min_dist, perplexity)
 
     Returns:
         reduced: Reduced coordinates (n_samples, n_components)
     """
-    print(f"Applying {method.upper()} to reduce to {n_components}D...")
-
-    # Apply PCA first for UMAP/t-SNE if embeddings are high-dimensional
-    if method in ["umap", "tsne"] and embeddings.shape[1] > 50:
-        from sklearn.decomposition import PCA
-        pca_components = min(50, embeddings.shape[0] - 1, embeddings.shape[1])
-        print(f"  Pre-reducing with PCA to {pca_components} dimensions...")
-        pca = PCA(n_components=pca_components, random_state=42)
-        embeddings = pca.fit_transform(embeddings)
-        print(f"  PCA explained variance: {pca.explained_variance_ratio_.sum():.2%}")
-
-    if method == "umap":
-        import umap
-        reducer = umap.UMAP(
-            n_components=n_components,
-            n_neighbors=kwargs.get("n_neighbors", 15),
-            min_dist=kwargs.get("min_dist", 0.1),
-            metric="cosine",
-            random_state=42,
-            verbose=True
-        )
-        reduced = reducer.fit_transform(embeddings)
-
-    elif method == "tsne":
-        from sklearn.manifold import TSNE
-        reducer = TSNE(
-            n_components=n_components,
-            perplexity=kwargs.get("perplexity", 30),
-            random_state=42,
-            verbose=1,
-            max_iter=1000
-        )
-        reduced = reducer.fit_transform(embeddings)
-
-    elif method == "pca":
-        from sklearn.decomposition import PCA
-        reducer = PCA(n_components=n_components, random_state=42)
-        reduced = reducer.fit_transform(embeddings)
-        print(f"  PCA explained variance: {reducer.explained_variance_ratio_.sum():.2%}")
-
-    else:
-        raise ValueError(f"Unknown method: {method}")
-
-    return reduced
+    df = reduce_embeddings(
+        embeddings,
+        method=method,
+        n_components=n_components,
+        umap_n_neighbors=kwargs.get("n_neighbors", 15),
+        umap_min_dist=kwargs.get("min_dist", 0.1),
+        tsne_perplexity=kwargs.get("perplexity", 30),
+    )
+    # Extract raw coordinates from the DataFrame
+    prefix = method.lower()
+    cols = [f"{prefix}_x", f"{prefix}_y"]
+    if n_components >= 3:
+        cols.append(f"{prefix}_z")
+    return df[cols].values
 
 
 # ============================================================================
@@ -322,6 +229,8 @@ def create_visualization(
     """
     Create interactive scatter plot visualization.
 
+    Delegates to ragweed_toolkit.embeddings.umap_scatter() for the core plot.
+
     Args:
         df: DataFrame with coordinates and metadata
         x_col, y_col, z_col: Column names for coordinates
@@ -329,61 +238,15 @@ def create_visualization(
         title: Plot title
         output_path: Output HTML file path
     """
-    import plotly.express as px
-    import plotly.graph_objects as go
-
-    if z_col is not None:
-        # 3D plot
-        fig = px.scatter_3d(
-            df,
-            x=x_col,
-            y=y_col,
-            z=z_col,
-            color=color_col,
-            hover_data=["filename", "source_type", "location"],
-            title=title,
-            opacity=0.7
-        )
-        fig.update_traces(marker=dict(size=3))
-    else:
-        # 2D plot
-        fig = px.scatter(
-            df,
-            x=x_col,
-            y=y_col,
-            color=color_col,
-            hover_data=["filename", "source_type", "location"],
-            title=title,
-            opacity=0.7
-        )
-        fig.update_traces(marker=dict(size=5))
-
-    # Update layout
-    fig.update_layout(
-        template="plotly_white",
-        width=1200,
-        height=800,
-        legend=dict(
-            yanchor="top",
-            y=0.99,
-            xanchor="left",
-            x=1.02
-        )
+    return umap_scatter(
+        df,
+        x_col=x_col,
+        y_col=y_col,
+        z_col=z_col,
+        color_col=color_col,
+        title=title,
+        output_path=output_path,
     )
-
-    # Save
-    fig.write_html(output_path)
-    print(f"Saved: {output_path}")
-
-    # Also save as static image
-    png_path = output_path.replace('.html', '.png')
-    try:
-        fig.write_image(png_path, scale=2)
-        print(f"Saved: {png_path}")
-    except Exception as e:
-        print(f"Could not save PNG (install kaleido): {e}")
-
-    return fig
 
 
 def create_combined_visualization(
@@ -523,14 +386,7 @@ def main():
     print("STEP 1: Loading images")
     print("-" * 70)
 
-    transform = transforms.Compose([
-        transforms.Resize((CONFIG["image_size"], CONFIG["image_size"])),
-        transforms.ToTensor(),
-        transforms.Normalize(
-            mean=[0.485, 0.456, 0.406],
-            std=[0.229, 0.224, 0.225]
-        )
-    ])
+    transform = default_transform(CONFIG["image_size"])
 
     dataset = ImageDataset(
         root_dir=CONFIG["data_dir"],
@@ -561,18 +417,18 @@ def main():
         metadata = data["metadata"].tolist()
         print(f"Loaded {len(embeddings)} embeddings")
     else:
-        # Initialize model
+        # Initialize model (from ragweed_toolkit.embeddings)
         print(f"Initializing {CONFIG['model_name']} model...")
         model = FeatureExtractor(CONFIG["model_name"])
         print(f"Model embedding dimension: {model.embedding_dim}")
 
-        # Extract embeddings
+        # Extract embeddings (from ragweed_toolkit.embeddings)
         embeddings = extract_embeddings(
-            dataset=dataset,
+            images=dataset,
             model=model,
             batch_size=CONFIG["batch_size"],
             num_workers=CONFIG["num_workers"],
-            device=CONFIG["device"]
+            device=CONFIG["device"],
         )
 
         metadata = dataset.metadata

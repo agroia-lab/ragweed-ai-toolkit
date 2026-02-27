@@ -253,3 +253,48 @@ def extract_embeddings(
             all_embeddings.append(features.cpu().numpy())
 
     return np.vstack(all_embeddings)
+
+
+def main():
+    """CLI entry point for feature extraction."""
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description="Extract CNN embeddings from a directory of images."
+    )
+    parser.add_argument("--source", required=True, help="Directory containing images")
+    parser.add_argument("--output", required=True, help="Output .npy file for embeddings")
+    parser.add_argument("--backbone", default="resnet50",
+                        choices=["resnet50", "efficientnet_b0", "efficientnet_b2"],
+                        help="CNN backbone (default: resnet50)")
+    parser.add_argument("--batch-size", type=int, default=32, help="Batch size (default: 32)")
+    parser.add_argument("--device", default="cuda", help="Device (default: cuda)")
+    parser.add_argument("--max-images", type=int, default=None, help="Max images to process")
+    parser.add_argument("--workers", type=int, default=4, help="DataLoader workers (default: 4)")
+    args = parser.parse_args()
+
+    image_paths = scan_image_directory(args.source, max_images=args.max_images)
+    if not image_paths:
+        print(f"No images found in {args.source}")
+        return
+
+    print(f"Found {len(image_paths)} images in {args.source}")
+    print(f"Backbone: {args.backbone}, device: {args.device}")
+
+    extractor = FeatureExtractor(args.backbone)
+    embeddings = extract_embeddings(
+        image_paths,
+        extractor,
+        batch_size=args.batch_size,
+        num_workers=args.workers,
+        device=args.device,
+    )
+
+    out_path = Path(args.output)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    np.save(str(out_path), embeddings)
+    print(f"\nSaved {embeddings.shape} embeddings to {out_path}")
+
+
+if __name__ == "__main__":
+    main()

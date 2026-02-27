@@ -131,3 +131,54 @@ def lisa_summary(gdf: gpd.GeoDataFrame, cluster_col: str = "lisa_cluster") -> di
         count = int((gdf[cluster_col] == cat).sum())
         summary[cat] = {"count": count, "pct": round(100 * count / n, 1) if n > 0 else 0.0}
     return summary
+
+
+def main():
+    """CLI entry point for bivariate LISA cluster analysis."""
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description="Compute bivariate LISA clusters from a spatial dataset."
+    )
+    parser.add_argument("--input", required=True, help="GeoPackage/Shapefile with point observations")
+    parser.add_argument("--var-x", required=True, help="Column name for first variable")
+    parser.add_argument("--var-y", required=True, help="Column name for second variable")
+    parser.add_argument("--output", default=None, help="Output GeoPackage path (optional)")
+    parser.add_argument("--threshold", type=float, default=15.0,
+                        help="Distance threshold for spatial weights in metres (default: 15)")
+    parser.add_argument("--permutations", type=int, default=999,
+                        help="Number of permutations for p-values (default: 999)")
+    parser.add_argument("--alpha", type=float, default=0.05,
+                        help="Significance level (default: 0.05)")
+    args = parser.parse_args()
+
+    gdf = gpd.read_file(args.input)
+    print(f"Input: {len(gdf)} observations")
+    print(f"Variables: {args.var_x} x {args.var_y}")
+    print(f"Threshold: {args.threshold}m, permutations: {args.permutations}, alpha: {args.alpha}")
+
+    result = compute_bivariate_lisa(
+        gdf,
+        args.var_x,
+        args.var_y,
+        threshold=args.threshold,
+        permutations=args.permutations,
+        alpha=args.alpha,
+    )
+
+    summary = lisa_summary(result)
+    print(f"\nLISA Cluster Summary:")
+    for cat in ["HH", "HL", "LH", "LL", "NS"]:
+        info = summary[cat]
+        print(f"  {cat}: {info['count']} ({info['pct']}%)")
+
+    if args.output:
+        from pathlib import Path
+        out_path = Path(args.output)
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        result.to_file(str(out_path), driver="GPKG")
+        print(f"\nResults saved to {out_path}")
+
+
+if __name__ == "__main__":
+    main()

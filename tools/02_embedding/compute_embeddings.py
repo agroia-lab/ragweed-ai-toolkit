@@ -28,6 +28,17 @@ import json
 from datetime import datetime
 import numpy as np
 
+# ragweed_toolkit library imports
+from ragweed_toolkit.embeddings import reduce_embeddings, umap_scatter
+
+# TODO: Move CLIP embedding computation to ragweed_toolkit.embeddings when
+# the library supports CLIP backends alongside ResNet50. Currently only
+# ResNet50/EfficientNet are in FeatureExtractor.
+
+# TODO: Move FiftyOne integration helpers to ragweed_toolkit when API
+# supports dataset management (compute_clip_embeddings,
+# get_embeddings_from_dataset, find_similar_images).
+
 # Project root
 PROJECT_ROOT = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
@@ -228,6 +239,8 @@ def compute_umap(
 ) -> np.ndarray:
     """Compute UMAP dimensionality reduction.
 
+    Delegates to ragweed_toolkit.embeddings.reduce_embeddings().
+
     Args:
         embeddings: High-dimensional embeddings (N x D)
         n_neighbors: UMAP n_neighbors parameter
@@ -238,26 +251,26 @@ def compute_umap(
     Returns:
         Low-dimensional coordinates (N x n_components)
     """
-    import umap
-
     print(f"\nComputing UMAP projection...")
     print(f"  Input shape: {embeddings.shape}")
     print(f"  n_neighbors: {n_neighbors}")
     print(f"  min_dist: {min_dist}")
     print(f"  metric: {metric}")
 
-    reducer = umap.UMAP(
-        n_neighbors=n_neighbors,
-        min_dist=min_dist,
+    df = reduce_embeddings(
+        embeddings,
+        method="umap",
         n_components=n_components,
-        metric=metric,
-        random_state=42,
-        verbose=True
+        umap_n_neighbors=n_neighbors,
+        umap_min_dist=min_dist,
+        umap_metric=metric,
     )
+    cols = [f"umap_x", f"umap_y"]
+    if n_components >= 3:
+        cols.append("umap_z")
+    coords = df[cols].values
 
-    coords = reducer.fit_transform(embeddings)
     print(f"  Output shape: {coords.shape}")
-
     return coords
 
 

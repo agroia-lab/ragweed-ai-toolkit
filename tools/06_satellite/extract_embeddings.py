@@ -41,6 +41,7 @@ except ImportError:
 _script_dir = Path(__file__).resolve().parent
 PROJECT_ROOT = _script_dir.parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
+sys.path.insert(0, str(PROJECT_ROOT / "src"))
 
 from scripts.utils.paths import get_paths, get_external_drive
 
@@ -68,10 +69,10 @@ def initialize_ee():
     """Initialize Earth Engine with project."""
     try:
         ee.Initialize(project=EE_PROJECT)
-        print(f"✅ Earth Engine initialized (project: {EE_PROJECT})")
+        print(f"Earth Engine initialized (project: {EE_PROJECT})")
         return True
     except Exception as e:
-        print(f"❌ Earth Engine initialization failed: {e}")
+        print(f"Earth Engine initialization failed: {e}")
         print("Run: earthengine authenticate")
         return False
 
@@ -104,7 +105,7 @@ def load_paddock_boundaries(
         boundaries_path: Custom boundaries file path (optional)
     """
     bpath = get_boundaries_path(boundaries_path)
-    print(f"📂 Loading boundaries from: {bpath}")
+    print(f"Loading boundaries from: {bpath}")
 
     gdf = gpd.read_file(bpath)
 
@@ -116,7 +117,7 @@ def load_paddock_boundaries(
             break
 
     if paddock_field is None:
-        print(f"⚠️ No recognized paddock field found. Columns: {list(gdf.columns)}")
+        print(f"WARNING: No recognized paddock field found. Columns: {list(gdf.columns)}")
         paddock_field = gdf.columns[0]  # Use first column
 
     # Standardize to 'paddock' column
@@ -127,12 +128,12 @@ def load_paddock_boundaries(
         gdf = gdf[gdf['paddock'] == paddock_name]
         if len(gdf) == 0:
             available = gpd.read_file(bpath)['paddock'].unique() if 'paddock' in gpd.read_file(bpath).columns else []
-            print(f"❌ Paddock '{paddock_name}' not found.")
+            print(f"Paddock '{paddock_name}' not found.")
             if available:
                 print(f"Available: {', '.join(available)}")
             sys.exit(1)
 
-    print(f"📍 Loaded {len(gdf)} polygon(s) for: {', '.join(gdf['paddock'].unique())}")
+    print(f"Loaded {len(gdf)} polygon(s) for: {', '.join(gdf['paddock'].unique())}")
     return gdf
 
 
@@ -182,7 +183,7 @@ def extract_embeddings_for_paddock(
     # Generate grid
     print(f"Generating {GRID_SIZE}x{GRID_SIZE}m grid...")
     grid = generate_grid(paddock_union, GRID_SIZE)
-    print(f"  → {len(grid)} grid cells")
+    print(f"  -> {len(grid)} grid cells")
 
     # Get centroids for sampling (convert to WGS84 for Earth Engine)
     grid_wgs84 = grid.to_crs(epsg=4326)
@@ -225,7 +226,7 @@ def extract_embeddings_for_paddock(
                 props = feat['properties']
                 all_features.append(props)
         except Exception as e:
-            print(f"  ⚠️ Batch {i//batch_size} failed: {e}")
+            print(f"  WARNING: Batch {i//batch_size} failed: {e}")
             # Add empty entries for failed batch
             for cell_id in batch_ids:
                 all_features.append({'cell_id': cell_id})
@@ -244,11 +245,16 @@ def extract_embeddings_for_paddock(
     # Calculate embedding statistics
     emb_cols = [c for c in grid_with_emb.columns if c.startswith('A')]
     valid_count = grid_with_emb[emb_cols[0]].notna().sum() if emb_cols else 0
-    print(f"  → Extracted {valid_count}/{len(grid)} cells with valid embeddings")
+    print(f"  -> Extracted {valid_count}/{len(grid)} cells with valid embeddings")
 
     return grid_with_emb
 
 
+# TODO: Library alternative: ragweed_toolkit.satellite.presto.apply_clustering
+# The library version uses single n_clusters (int) and creates columns named
+# cluster_{scope}_{n}. This script uses column names cluster_{k} for Google
+# Satellite Embeddings (64 dims A00-A63) vs PRESTO (128 dims A00-A127).
+# Kept script version to preserve output column naming convention.
 def apply_clustering(
     gdf: gpd.GeoDataFrame,
     n_clusters: list = [10, 15, 20]
@@ -263,13 +269,13 @@ def apply_clustering(
         GeoDataFrame with added cluster columns (cluster_10, cluster_15, cluster_20)
     """
     if not SKLEARN_AVAILABLE:
-        print("⚠️ scikit-learn not available, skipping clustering")
+        print("WARNING: scikit-learn not available, skipping clustering")
         return gdf
 
     # Get embedding columns
     emb_cols = [c for c in gdf.columns if c.startswith('A') and c[1:].isdigit()]
     if len(emb_cols) == 0:
-        print("⚠️ No embedding columns found for clustering")
+        print("WARNING: No embedding columns found for clustering")
         return gdf
 
     # Extract valid embeddings
@@ -277,26 +283,30 @@ def apply_clustering(
     embeddings = gdf.loc[valid_mask, emb_cols].values
 
     if len(embeddings) < max(n_clusters):
-        print(f"⚠️ Not enough valid embeddings ({len(embeddings)}) for clustering")
+        print(f"WARNING: Not enough valid embeddings ({len(embeddings)}) for clustering")
         return gdf
 
-    print(f"\n📊 Applying KMeans clustering...")
+    print(f"\nApplying KMeans clustering...")
     scaler = StandardScaler()
     emb_scaled = scaler.fit_transform(embeddings)
 
     for k in n_clusters:
-        print(f"  → K={k} clusters...")
+        print(f"  -> K={k} clusters...")
         kmeans = KMeans(n_clusters=k, random_state=42, n_init=10)
         labels = kmeans.fit_predict(emb_scaled)
 
         col_name = f'cluster_{k}'
         gdf[col_name] = np.nan
         gdf.loc[valid_mask, col_name] = labels.astype(int)
-        print(f"    ✓ Added column '{col_name}'")
+        print(f"    Added column '{col_name}'")
 
     return gdf
 
 
+# TODO: Library alternative: ragweed_toolkit.satellite.presto.apply_pca
+# The library version creates columns named pca_{scope}_{i+1}. This script
+# uses pca_{i+1} for Google Satellite Embeddings.
+# Kept script version to preserve output column naming convention.
 def apply_pca(
     gdf: gpd.GeoDataFrame,
     n_components: int = 3
@@ -311,13 +321,13 @@ def apply_pca(
         GeoDataFrame with added PCA columns (pca_1, pca_2, pca_3)
     """
     if not SKLEARN_AVAILABLE:
-        print("⚠️ scikit-learn not available, skipping PCA")
+        print("WARNING: scikit-learn not available, skipping PCA")
         return gdf
 
     # Get embedding columns
     emb_cols = [c for c in gdf.columns if c.startswith('A') and c[1:].isdigit()]
     if len(emb_cols) == 0:
-        print("⚠️ No embedding columns found for PCA")
+        print("WARNING: No embedding columns found for PCA")
         return gdf
 
     # Extract valid embeddings
@@ -325,10 +335,10 @@ def apply_pca(
     embeddings = gdf.loc[valid_mask, emb_cols].values
 
     if len(embeddings) < n_components:
-        print(f"⚠️ Not enough valid embeddings for PCA")
+        print(f"WARNING: Not enough valid embeddings for PCA")
         return gdf
 
-    print(f"\n📈 Applying PCA (n_components={n_components})...")
+    print(f"\nApplying PCA (n_components={n_components})...")
     scaler = StandardScaler()
     emb_scaled = scaler.fit_transform(embeddings)
 
@@ -354,8 +364,8 @@ def apply_pca(
             gdf.loc[valid_mask, col_rgb] = 128
 
     explained = pca.explained_variance_ratio_
-    print(f"  ✓ Variance explained: {', '.join([f'PC{i+1}={v:.1%}' for i, v in enumerate(explained)])}")
-    print(f"  ✓ Total: {sum(explained):.1%}")
+    print(f"  Variance explained: {', '.join([f'PC{i+1}={v:.1%}' for i, v in enumerate(explained)])}")
+    print(f"  Total: {sum(explained):.1%}")
 
     return gdf
 

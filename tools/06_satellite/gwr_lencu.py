@@ -11,7 +11,10 @@ Compares GWR (spatially varying coefficients) with OLS baseline.
 Produces local R2 maps, local coefficient maps, and summary statistics.
 """
 
+import sys
 import warnings
+from pathlib import Path
+
 warnings.filterwarnings("ignore")
 
 import numpy as np
@@ -25,6 +28,20 @@ from shapely.geometry import Point
 from mgwr.gwr import GWR
 from mgwr.sel_bw import Sel_BW
 from spreg import OLS
+
+# ---- Portable path resolution ----
+_script_dir = Path(__file__).resolve().parent
+_project_root = _script_dir.parent.parent
+sys.path.insert(0, str(_project_root))
+sys.path.insert(0, str(_project_root / "src"))
+
+# TODO: The library has ragweed_toolkit.spatial.gwr.fit_ols and
+# ragweed_toolkit.spatial.gwr.fit_gwr, but they take a GeoDataFrame +
+# column names as inputs, whereas this script passes raw numpy arrays
+# (coords, y, X) directly to mgwr/spreg.  The library API would need
+# adapting to support the raw-array workflow used here, or this script
+# could be refactored to use GeoDataFrame input.  For now, keep the
+# script-specific implementations.
 
 OUTPUT_DIR = "/home/malezainia1/dev/INIA_DeepLearning_Ubuntu_mod_lleon/outputs/lencu_presto/spatial_analysis"
 DATA_PATH = "/home/malezainia1/dev/INIA_DeepLearning_Ubuntu_mod_lleon/outputs/lencu_presto/analysis_results.csv"

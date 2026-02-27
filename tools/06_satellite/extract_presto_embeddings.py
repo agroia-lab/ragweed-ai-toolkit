@@ -72,31 +72,31 @@ except ImportError:
 
 # Project paths
 PROJECT_ROOT = Path(__file__).parent.parent.parent
+sys.path.insert(0, str(PROJECT_ROOT / "src"))
+
+# --- Library imports (replacing internal duplicates) ---
+from ragweed_toolkit.satellite.presto import (
+    extract_presto_embeddings as _lib_extract_presto,
+    raster_to_grid as _lib_raster_to_grid,
+    apply_clustering as _lib_apply_clustering,
+    apply_pca as _lib_apply_pca,
+    PRESTO_DIMENSIONS,
+    PRESTO_SCALE,
+    PRESTO_OFFSET,
+    PRESTO_NODATA,
+    SEASON_WINDOWS_12M,
+)
 
 # Output directories
 OUTPUT_DIR = Path("/media/malezainia1/LORENZO/outputs_sugal_25-26/satellite_embeddings/presto")
 OUTPUT_DIR_MAIN = Path("/media/malezainia1/LORENZO/outputs_sugal_25-26/satellite_embeddings")
 BOUNDARIES_PATH = Path("/media/malezainia1/LORENZO/outputs_sugal_25-26/satellite_embeddings/paddock_boundaries.gpkg")
 
-# Presto embedding parameters
-PRESTO_DIMENSIONS = 128
+# Grid size
 GRID_SIZE = 10  # meters (10x10m grid)
 
-# UInt16 scaling factors (from WorldCereal demo)
-PRESTO_SCALE = 0.0002
-PRESTO_OFFSET = -6
-PRESTO_NODATA = 65535
-
-# IMPORTANT: Presto requires exactly 12 monthly timesteps (full year)
-# We use 12-month windows ending in the harvest month (March)
-# This captures the full annual cycle centered on the tomato growing season
-SEASON_WINDOWS = {
-    "20-21": ("2020-04-01", "2021-03-31"),  # 12 months ending at harvest
-    "21-22": ("2021-04-01", "2022-03-31"),
-    "22-23": ("2022-04-01", "2023-03-31"),
-    "24-25": ("2024-04-01", "2025-03-31"),
-    "25-26": ("2025-04-01", "2026-03-31"),  # Requires future data!
-}
+# Use library season windows
+SEASON_WINDOWS = SEASON_WINDOWS_12M
 
 # NOTE: Partial season windows DON'T WORK with Presto
 # Presto requires exactly 12 timesteps (monthly composites for a full year)
@@ -262,6 +262,7 @@ def get_paddock_extent_utm(gdf: gpd.GeoDataFrame, buffer: float = 50) -> dict:
     }
 
 
+# --- Thin CLI wrapper around library extraction function with progress logging ---
 def extract_presto_embeddings_worldcereal(
     extent: dict,
     start_date: str,
@@ -271,96 +272,35 @@ def extract_presto_embeddings_worldcereal(
 ) -> Optional[Path]:
     """
     Extract Presto embeddings using WorldCereal API via openEO.
-
-    Args:
-        extent: Bounding box dict with west, south, east, north, epsg
-        start_date: Start date (YYYY-MM-DD)
-        end_date: End date (YYYY-MM-DD)
-        output_path: Path for output GeoTIFF
-        paddock_name: Name for job title
-
-    Returns:
-        Path to downloaded GeoTIFF or None if failed
+    Wrapper around ragweed_toolkit.satellite.presto.extract_presto_embeddings
+    with CLI-specific logging.
     """
-    try:
-        from worldcereal.job import create_embeddings_process_graph, INFERENCE_JOB_OPTIONS
-        from worldcereal.parameters import EmbeddingsParameters
-        from openeo_gfmap.spatial import BoundingBoxExtent
-        from openeo_gfmap.temporal import TemporalContext
-    except ImportError as e:
-        print(f"Error: WorldCereal package not available: {e}")
-        print("Install with: pip install worldcereal openeo openeo-gfmap")
-        return None
-
     print(f"\n{'='*60}")
     print(f"OPENEO JOB: {paddock_name}")
     print(f"{'='*60}")
     print(f"  Extent: {extent['west']:.0f}, {extent['south']:.0f} to {extent['east']:.0f}, {extent['north']:.0f}")
     print(f"  Period: {start_date} to {end_date}")
+    print("  Starting job (this may take 20-60 minutes)...")
 
-    try:
-        # Create embedding parameters
-        embedding_params = EmbeddingsParameters()
+    result = _lib_extract_presto(
+        extent=extent,
+        start_date=start_date,
+        end_date=end_date,
+        output_path=str(output_path),
+        paddock_name=paddock_name,
+        openeo_url=OPENEO_URL,
+    )
 
-        # Create bounding box extent
-        bbox_extent = BoundingBoxExtent(
-            west=extent['west'],
-            south=extent['south'],
-            east=extent['east'],
-            north=extent['north'],
-            epsg=extent['epsg']
-        )
+    if result is not None:
+        print(f"  Downloaded: {result}")
+        print(f"  Size: {result.stat().st_size / 1024 / 1024:.1f} MB")
+    else:
+        print(f"  Error: Extraction failed for {paddock_name}")
 
-        # Create temporal context
-        temporal_extent = TemporalContext(
-            start_date=start_date,
-            end_date=end_date
-        )
-
-        # Build process graph
-        print("  Building process graph...")
-        inference_result = create_embeddings_process_graph(
-            spatial_extent=bbox_extent,
-            temporal_extent=temporal_extent,
-            embeddings_parameters=embedding_params,
-            scale_uint16=True,  # Scale to UInt16 for smaller file size
-        )
-
-        # Create job
-        print("  Creating openEO job...")
-        job = inference_result.create_job(
-            title=f"Presto {paddock_name} {start_date} to {end_date}",
-            job_options=INFERENCE_JOB_OPTIONS,
-        )
-
-        # Start and wait
-        print("  Starting job (this may take 20-60 minutes)...")
-        print("  Job status will be updated periodically...")
-        job.start_and_wait()
-
-        print("  Job finished. Downloading results...")
-
-        # Download GeoTIFF
-        output_path.parent.mkdir(parents=True, exist_ok=True)
-        for asset in job.get_results().get_assets():
-            if asset.metadata.get("type", "").startswith("image/tiff"):
-                asset.download(str(output_path))
-                break
-        else:
-            raise RuntimeError("No GeoTIFF asset found in job results.")
-
-        if not output_path.exists():
-            raise FileNotFoundError(f"Download failed: {output_path}")
-
-        print(f"  Downloaded: {output_path}")
-        print(f"  Size: {output_path.stat().st_size / 1024 / 1024:.1f} MB")
-        return output_path
-
-    except Exception as e:
-        print(f"  Error: {e}")
-        return None
+    return result
 
 
+# --- Thin CLI wrapper around library raster_to_grid with progress logging ---
 def raster_to_grid_embeddings(
     raster_path: Path,
     paddock_gdf: gpd.GeoDataFrame,
@@ -368,292 +308,62 @@ def raster_to_grid_embeddings(
 ) -> gpd.GeoDataFrame:
     """
     Convert Presto embedding raster to 10m grid cells.
-
-    Args:
-        raster_path: Path to 128-band GeoTIFF
-        paddock_gdf: Paddock boundary GeoDataFrame
-        paddock_name: Name of paddock
-
-    Returns:
-        GeoDataFrame with cell geometries and A00-A127 embedding columns
+    Wrapper around ragweed_toolkit.satellite.presto.raster_to_grid
+    with CLI-specific logging.
     """
-    if not RASTERIO_AVAILABLE:
-        print("Error: rasterio not available for raster processing")
-        return gpd.GeoDataFrame()
-
     print(f"\n  Converting raster to grid for {paddock_name}...")
 
-    with rasterio.open(raster_path) as src:
-        # Get raster info
-        print(f"    Raster CRS: {src.crs}")
-        print(f"    Raster shape: {src.count} bands x {src.height} x {src.width}")
+    result = _lib_raster_to_grid(
+        raster_path=str(raster_path),
+        paddock_gdf=paddock_gdf,
+        paddock_name=paddock_name,
+    )
 
-        # Ensure paddock is in raster CRS
-        if paddock_gdf.crs != src.crs:
-            paddock_gdf_reproj = paddock_gdf.to_crs(src.crs)
-        else:
-            paddock_gdf_reproj = paddock_gdf
-
-        paddock_geom = paddock_gdf_reproj.unary_union
-
-        # Read masked data
-        try:
-            out_image, out_transform = rio_mask(
-                src,
-                [mapping(paddock_geom)],
-                crop=True,
-                nodata=PRESTO_NODATA
-            )
-        except Exception as e:
-            print(f"    Warning: Mask failed, reading full raster: {e}")
-            out_image = src.read()
-            out_transform = src.transform
-
-        n_bands, height, width = out_image.shape
-        print(f"    Masked shape: {n_bands} bands x {height} x {width}")
-
-        # Convert UInt16 to float
-        nodata_mask = out_image[0] == PRESTO_NODATA
-        out_image = out_image.astype(np.float32) * PRESTO_SCALE + PRESTO_OFFSET
-        out_image[:, nodata_mask] = np.nan
-
-        # Create grid cells
-        cells = []
-        embeddings_list = []
-        cell_id = 0
-
-        for row in range(height):
-            for col in range(width):
-                # Get cell bounds from transform
-                x = out_transform.c + col * out_transform.a
-                y = out_transform.f + row * out_transform.e
-
-                cell_geom = box(x, y, x + abs(out_transform.a), y - abs(out_transform.e))
-
-                # Get embedding values for this pixel
-                pixel_emb = out_image[:, row, col]
-
-                # Skip nodata pixels
-                if np.isnan(pixel_emb[0]):
-                    continue
-
-                # Check if cell intersects paddock
-                if cell_geom.intersects(paddock_geom):
-                    clipped_geom = cell_geom.intersection(paddock_geom)
-                    if not clipped_geom.is_empty:
-                        cells.append({
-                            'cell_id': cell_id,
-                            'geometry': clipped_geom
-                        })
-                        embeddings_list.append(pixel_emb)
-                        cell_id += 1
-
-        print(f"    Generated {len(cells)} grid cells with embeddings")
-
-    if not cells:
-        print(f"    Warning: No valid cells for {paddock_name}")
-        return gpd.GeoDataFrame()
-
-    # Create GeoDataFrame
-    gdf = gpd.GeoDataFrame(cells, crs=src.crs)
-
-    # Convert to UTM 19S if needed
-    if gdf.crs.to_epsg() != 32719:
-        gdf = gdf.to_crs(epsg=32719)
-
-    # Add embedding columns (A00-A127)
-    emb_array = np.array(embeddings_list)
-    for i in range(min(PRESTO_DIMENSIONS, emb_array.shape[1])):
-        gdf[f'A{i:02d}'] = emb_array[:, i]
-
-    # Add metadata
-    gdf['paddock'] = paddock_name
-
-    return gdf
+    print(f"    Generated {len(result)} grid cells with embeddings")
+    return result
 
 
-def apply_global_clustering(
-    gdf: gpd.GeoDataFrame,
-    n_clusters: int = 20
-) -> gpd.GeoDataFrame:
+# --- Wrappers around library clustering/PCA with CLI-specific logging ---
+
+def apply_global_clustering(gdf, n_clusters=20):
     """Apply global KMeans clustering across all paddocks."""
-    if not SKLEARN_AVAILABLE:
-        print("Warning: scikit-learn not available, skipping clustering")
-        return gdf
-
-    emb_cols = [f'A{i:02d}' for i in range(PRESTO_DIMENSIONS) if f'A{i:02d}' in gdf.columns]
-
-    if not emb_cols:
-        print("Warning: No embedding columns found")
-        return gdf
-
-    valid_mask = gdf[emb_cols[0]].notna()
-    embeddings = gdf.loc[valid_mask, emb_cols].values
-
-    if len(embeddings) < n_clusters:
-        print(f"Warning: Not enough samples ({len(embeddings)}) for {n_clusters} clusters")
-        return gdf
-
     print(f"\nApplying GLOBAL KMeans (K={n_clusters})...")
-    scaler = StandardScaler()
-    emb_scaled = scaler.fit_transform(embeddings)
-
-    kmeans = KMeans(n_clusters=n_clusters, random_state=42, n_init=10)
-    labels = kmeans.fit_predict(emb_scaled)
-
+    result = _lib_apply_clustering(gdf, n_clusters=n_clusters, scope="global")
     col_name = f'cluster_global_{n_clusters}'
-    gdf[col_name] = np.nan
-    gdf.loc[valid_mask, col_name] = labels.astype(int)
-    print(f"  Added column '{col_name}'")
-
-    return gdf
+    if col_name in result.columns:
+        print(f"  Added column '{col_name}'")
+    return result
 
 
-def apply_local_clustering(
-    gdf: gpd.GeoDataFrame,
-    n_clusters: int = 20
-) -> gpd.GeoDataFrame:
+def apply_local_clustering(gdf, n_clusters=20):
     """Apply local KMeans clustering within each paddock."""
-    if not SKLEARN_AVAILABLE:
-        return gdf
-
-    emb_cols = [f'A{i:02d}' for i in range(PRESTO_DIMENSIONS) if f'A{i:02d}' in gdf.columns]
-
-    if not emb_cols:
-        return gdf
-
-    col_name = f'cluster_local_{n_clusters}'
-    gdf[col_name] = np.nan
-
     print(f"\nApplying LOCAL KMeans (K={n_clusters}) per paddock...")
-
-    for paddock in gdf['paddock'].unique():
-        paddock_mask = gdf['paddock'] == paddock
-        valid_mask = paddock_mask & gdf[emb_cols[0]].notna()
-
-        embeddings = gdf.loc[valid_mask, emb_cols].values
-
-        # Adjust cluster count for small paddocks
-        actual_k = min(n_clusters, len(embeddings) - 1)
-        if actual_k < 2:
-            print(f"  {paddock}: Skipping (only {len(embeddings)} cells)")
-            continue
-
-        scaler = StandardScaler()
-        emb_scaled = scaler.fit_transform(embeddings)
-
-        kmeans = KMeans(n_clusters=actual_k, random_state=42, n_init=10)
-        labels = kmeans.fit_predict(emb_scaled)
-
-        gdf.loc[valid_mask, col_name] = labels.astype(int)
-        print(f"  {paddock}: {len(embeddings)} cells -> {actual_k} clusters")
-
-    return gdf
+    result = _lib_apply_clustering(gdf, n_clusters=n_clusters, scope="local")
+    col_name = f'cluster_local_{n_clusters}'
+    if col_name in result.columns:
+        for paddock in result['paddock'].unique():
+            mask = (result['paddock'] == paddock) & result[col_name].notna()
+            print(f"  {paddock}: {mask.sum()} cells clustered")
+    return result
 
 
-def apply_global_pca(
-    gdf: gpd.GeoDataFrame,
-    n_components: int = 3
-) -> gpd.GeoDataFrame:
+def apply_global_pca(gdf, n_components=3):
     """Apply global PCA across all paddocks."""
-    if not SKLEARN_AVAILABLE:
-        return gdf
-
-    emb_cols = [f'A{i:02d}' for i in range(PRESTO_DIMENSIONS) if f'A{i:02d}' in gdf.columns]
-
-    if not emb_cols:
-        return gdf
-
-    valid_mask = gdf[emb_cols[0]].notna()
-    embeddings = gdf.loc[valid_mask, emb_cols].values
-
     print(f"\nApplying GLOBAL PCA (n_components={n_components})...")
-
-    scaler = StandardScaler()
-    emb_scaled = scaler.fit_transform(embeddings)
-
-    # Use incremental PCA for large datasets
-    if len(embeddings) > 50000:
-        pca = IncrementalPCA(n_components=n_components)
-        chunk_size = 10000
-        for i in range(0, len(emb_scaled), chunk_size):
-            pca.partial_fit(emb_scaled[i:i+chunk_size])
-        pca_result = pca.transform(emb_scaled)
-    else:
-        pca = PCA(n_components=n_components)
-        pca_result = pca.fit_transform(emb_scaled)
-
-    # Add PCA columns
-    for i in range(n_components):
-        col_name = f'pca_global_{i+1}'
-        gdf[col_name] = np.nan
-        gdf.loc[valid_mask, col_name] = pca_result[:, i]
-
-    # Normalize to 0-255 for RGB visualization
-    for i in range(min(3, n_components)):
-        col = f'pca_global_{i+1}'
-        col_rgb = f'pca_global_{i+1}_rgb'
-        valid_vals = gdf.loc[valid_mask, col]
-        min_val, max_val = valid_vals.min(), valid_vals.max()
-        gdf[col_rgb] = np.nan
-        if max_val > min_val:
-            gdf.loc[valid_mask, col_rgb] = ((valid_vals - min_val) / (max_val - min_val) * 255).astype(int)
-
-    explained = pca.explained_variance_ratio_
-    print(f"  Variance explained: {', '.join([f'PC{i+1}={v:.1%}' for i, v in enumerate(explained)])}")
-    print(f"  Total: {sum(explained):.1%}")
-
-    return gdf
+    result = _lib_apply_pca(gdf, n_components=n_components, scope="global")
+    return result
 
 
-def apply_local_pca(
-    gdf: gpd.GeoDataFrame,
-    n_components: int = 3
-) -> gpd.GeoDataFrame:
+def apply_local_pca(gdf, n_components=3):
     """Apply local PCA within each paddock."""
-    if not SKLEARN_AVAILABLE:
-        return gdf
-
-    emb_cols = [f'A{i:02d}' for i in range(PRESTO_DIMENSIONS) if f'A{i:02d}' in gdf.columns]
-
-    if not emb_cols:
-        return gdf
-
     print(f"\nApplying LOCAL PCA (n_components={n_components}) per paddock...")
-
-    # Initialize columns
-    for i in range(n_components):
-        gdf[f'pca_local_{i+1}'] = np.nan
-        gdf[f'pca_local_{i+1}_rgb'] = np.nan
-
-    for paddock in gdf['paddock'].unique():
-        paddock_mask = gdf['paddock'] == paddock
-        valid_mask = paddock_mask & gdf[emb_cols[0]].notna()
-
-        embeddings = gdf.loc[valid_mask, emb_cols].values
-
-        if len(embeddings) < n_components + 1:
-            continue
-
-        scaler = StandardScaler()
-        emb_scaled = scaler.fit_transform(embeddings)
-
-        pca = PCA(n_components=n_components)
-        pca_result = pca.fit_transform(emb_scaled)
-
-        for i in range(n_components):
-            gdf.loc[valid_mask, f'pca_local_{i+1}'] = pca_result[:, i]
-
-            # Normalize to 0-255
-            vals = pca_result[:, i]
-            min_val, max_val = vals.min(), vals.max()
-            if max_val > min_val:
-                normalized = ((vals - min_val) / (max_val - min_val) * 255).astype(int)
-                gdf.loc[valid_mask, f'pca_local_{i+1}_rgb'] = normalized
-
-        print(f"  {paddock}: PCA computed ({len(embeddings)} cells)")
-
-    return gdf
+    result = _lib_apply_pca(gdf, n_components=n_components, scope="local")
+    for paddock in result['paddock'].unique():
+        col = f'pca_local_1'
+        if col in result.columns:
+            mask = (result['paddock'] == paddock) & result[col].notna()
+            print(f"  {paddock}: PCA computed ({mask.sum()} cells)")
+    return result
 
 
 def main():
