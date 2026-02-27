@@ -13,20 +13,36 @@ Key components:
     - viz: Embedding scatter plots and MMD heatmaps
 """
 
-from ragweed_toolkit.embeddings.extractor import (
-    FeatureExtractor,
-    default_transform,
-    extract_embeddings,
-    scan_image_directory,
-)
+# mmd only needs numpy + sklearn (always available via core deps)
 from ragweed_toolkit.embeddings.mmd import (
     DeploymentResult,
     compute_mmd,
     deployment_gate,
     permutation_test,
 )
-from ragweed_toolkit.embeddings.reduction import reduce_embeddings
-from ragweed_toolkit.embeddings.viz import mmd_bar_chart, mmd_heatmap, umap_scatter
+
+# extractor requires torch + torchvision (optional [embeddings] extra)
+try:
+    from ragweed_toolkit.embeddings.extractor import (
+        FeatureExtractor,
+        default_transform,
+        extract_embeddings,
+        scan_image_directory,
+    )
+except ImportError:
+    pass
+
+# reduction requires umap-learn (optional [embeddings] extra)
+try:
+    from ragweed_toolkit.embeddings.reduction import reduce_embeddings
+except ImportError:
+    pass
+
+# viz requires plotly (optional [viz] extra)
+try:
+    from ragweed_toolkit.embeddings.viz import mmd_bar_chart, mmd_heatmap, umap_scatter
+except ImportError:
+    pass
 
 __all__ = [
     # extractor
