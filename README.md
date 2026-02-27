@@ -12,7 +12,7 @@ Companion software to the Springer Nature book chapter:
 
 > **AI-Driven Spatial Decision-Support for Sustainable Weed Management under Climate Variability**
 >
-> Lorenzo A. Leon-Aguilar et al.
+> Lorenzo F. Leon et al.
 >
 > In: *Smart-Agriculture and Technology-Innovation: Facing the Dynamic of Climate Change*
 > (Springer Nature, 2026)
@@ -241,7 +241,7 @@ If you use this toolkit in your research, please cite:
 @incollection{leon2026ragweed,
   title     = {AI-Driven Spatial Decision-Support for Sustainable Weed
                Management under Climate Variability},
-  author    = {Le{\'o}n-Aguilar, Lorenzo A.},
+  author    = {Le{\'o}n, Lorenzo},
   booktitle = {Smart-Agriculture and Technology-Innovation: Facing the
                Dynamic of Climate Change},
   publisher = {Springer Nature},
