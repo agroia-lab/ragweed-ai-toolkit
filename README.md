@@ -19,6 +19,109 @@ Companion software to the Springer Nature book chapter:
 
 ---
 
+## Visual Overview
+
+<table>
+<tr>
+<td width="50%">
+
+**Cross-domain embedding space** -- ResNet-50 features from 9 international ragweed databases projected to 2D with UMAP. Each color is a different image source (5,338 images total).
+
+</td>
+<td width="50%">
+
+**MMD similarity network** -- Maximum Mean Discrepancy between database pairs. Edge thickness indicates domain similarity; Chilean (blue) and international (orange) sources form distinct clusters.
+
+</td>
+</tr>
+<tr>
+<td>
+
+![UMAP cross-domain embedding space](docs/images/fig_umap_crossdomain.png)
+
+</td>
+<td>
+
+![MMD similarity network](docs/images/fig_mmd_network.png)
+
+</td>
+</tr>
+<tr>
+<td width="50%">
+
+**Kriging density map** -- Ordinary kriging interpolation (exponential model, 5 m grid) of weed seedling counts from 1,685 drone images. Hot spots (red) guide targeted herbicide application.
+
+</td>
+<td width="50%">
+
+**PRESTO satellite correlations** -- Pearson correlations between PRESTO PCA components and kriged weed densities for four species (*A. artemisiifolia* r=0.739, *C. arvensis* r=0.717).
+
+</td>
+</tr>
+<tr>
+<td>
+
+![Kriging density map](docs/images/fig_kriging_density.png)
+
+</td>
+<td>
+
+![PRESTO satellite correlations](docs/images/fig_presto_correlation.png)
+
+</td>
+</tr>
+<tr>
+<td width="50%">
+
+**LISA cluster analysis** -- Bivariate Local Moran's I (PC1 x weed density) identifies hot spots (HH, red), cold spots (LL, blue), and spatial outliers. 68% of pixels are significant at p < 0.05.
+
+</td>
+<td width="50%">
+
+**GWR local R² maps** -- Geographically Weighted Regression captures spatially varying relationships. Panel (B): AMBEL R²=0.882; Panel (C): LENCU R²=0.910 with 49 nearest-neighbor bandwidth.
+
+</td>
+</tr>
+<tr>
+<td>
+
+![LISA clusters](docs/images/fig_lisa_clusters.png)
+
+</td>
+<td>
+
+![GWR maps](docs/images/fig_gwr_maps.png)
+
+</td>
+</tr>
+<tr>
+<td width="50%">
+
+**Spectral indices heatmap** -- Pearson correlations between 10 PRESTO PCA components and kriged densities of four weed species. PC1 (42.7% variance) is the strongest predictor.
+
+</td>
+<td width="50%">
+
+**Variogram analysis** -- Experimental and fitted exponential variograms for cross- and auto-correlation. Spatial dependence range: 92--118 m, informing kriging interpolation parameters.
+
+</td>
+</tr>
+<tr>
+<td>
+
+![Spectral heatmap](docs/images/fig_spectral_heatmap.png)
+
+</td>
+<td>
+
+![Variograms](docs/images/fig_variograms.png)
+
+</td>
+</tr>
+</table>
+
+---
+
 ## What This Toolkit Does
 
 Three complementary scales of analysis for precision weed management:
