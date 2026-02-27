@@ -222,3 +222,4 @@ unification when the library API supports both backends.
 | 3 | 2026-02-27 | Refactor 27 tools/ CLI scripts to import from ragweed_toolkit (thin wrappers) |
 | 4 | 2026-02-27 | CLI entry points (8 commands via pyproject.toml), 4 notebook tutorials, environment.yml |
 | 5 | 2026-02-27 | GitHub repo (agroia-lab/ragweed-ai-toolkit), CI/CD (test/lint/docs), mkdocs site, CONTRIBUTING.md, CHANGELOG.md, v0.1.0 tag |
+| 6 | 2026-02-27 | Integration tests with real data (detection, embeddings, kriging, PRESTO LISA, spectral indices), v0.2.0 stable release |

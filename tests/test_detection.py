@@ -109,8 +109,8 @@ def _build_gps_exif_jpeg(lat_dms, lat_ref, lon_dms, lon_ref, altitude=None):
 
     Returns a temporary file path.
     """
-    from PIL import Image
     import piexif
+    from PIL import Image
 
     # Create a small image
     img = Image.new("RGB", (10, 10), color="green")
@@ -142,7 +142,7 @@ def _to_rational_tuple(dms):
 
 HAS_PIEXIF = True
 try:
-    import piexif
+    import piexif  # noqa: F401
 except ImportError:
     HAS_PIEXIF = False
 

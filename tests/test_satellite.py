@@ -14,7 +14,6 @@ from ragweed_toolkit.satellite.indices import (
     compute_spectral_indices,
 )
 
-
 # ------------------------------------------------------------------ #
 # Helper: build a 10-band Sentinel-2 pixel array
 # ------------------------------------------------------------------ #

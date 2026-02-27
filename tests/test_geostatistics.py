@@ -9,12 +9,10 @@ import numpy as np
 import pytest
 
 from ragweed_toolkit.geostatistics.variograms import (
-    VariogramModel,
     _exponential_model,
     compute_experimental_variogram,
     fit_exponential_model,
 )
-
 
 # ------------------------------------------------------------------ #
 # Helper: generate synthetic variogram data
