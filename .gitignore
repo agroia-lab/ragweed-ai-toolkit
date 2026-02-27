@@ -53,6 +53,7 @@ outputs/
 !chapter/figures/*.png
 !chapter/figures/*.jpg
 !docs/images/*.png
+!docs/images/*.jpg
 
 # OS
 .DS_Store

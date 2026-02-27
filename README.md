@@ -21,6 +21,90 @@ Companion software to the Springer Nature book chapter:
 
 ## Visual Overview
 
+### Spatial Maps
+
+<table>
+<tr>
+<td width="50%">
+
+**Kriging density map** -- Ordinary kriging interpolation (exponential model, 5 m grid) of weed seedling counts from 1,685 drone images. Hot spots (red) guide targeted herbicide application.
+
+</td>
+<td width="50%">
+
+**LISA cluster analysis** -- Bivariate Local Moran's I (PC1 x weed density) identifies hot spots (HH, red), cold spots (LL, blue), and spatial outliers. 68% of pixels are significant at p < 0.05.
+
+</td>
+</tr>
+<tr>
+<td>
+
+![Kriging density map](docs/images/fig_kriging_density.png)
+
+</td>
+<td>
+
+![LISA clusters](docs/images/fig_lisa_clusters.png)
+
+</td>
+</tr>
+<tr>
+<td width="50%">
+
+**GWR local R² maps** -- Geographically Weighted Regression captures spatially varying relationships. Panel (B): AMBEL R²=0.882; Panel (C): LENCU R²=0.910 with 49 nearest-neighbor bandwidth.
+
+</td>
+<td width="50%">
+
+**PRESTO satellite correlations** -- Pearson correlations between PRESTO PCA components and kriged weed densities for four species (*A. artemisiifolia* r=0.739, *C. arvensis* r=0.717).
+
+</td>
+</tr>
+<tr>
+<td>
+
+![GWR maps](docs/images/fig_gwr_maps.png)
+
+</td>
+<td>
+
+![PRESTO satellite correlations](docs/images/fig_presto_correlation.png)
+
+</td>
+</tr>
+</table>
+
+### Field Detection
+
+<table>
+<tr>
+<td width="50%">
+
+**SAHI drone detection** -- YOLOv11 + SAHI sliced inference on a drone image of a lentil field (*Lens culinaris*). 584 adult *Ambrosia artemisiifolia* plants detected with bounding boxes and confidence scores.
+
+</td>
+<td width="50%">
+
+**Cross-domain model comparison** -- Same images evaluated by three models: Chilean baseline (Run 1), Chilean transfer (Run 4), and international multi-domain (Run 5). Domain shift causes catastrophic failure; multi-source training recovers performance.
+
+</td>
+</tr>
+<tr>
+<td>
+
+![SAHI drone detection](docs/images/fig_sahi_detection.jpg)
+
+</td>
+<td>
+
+![Cross-domain comparison](docs/images/fig_crossdomain_comparison.jpg)
+
+</td>
+</tr>
+</table>
+
+### Embedding Analysis
+
 <table>
 <tr>
 <td width="50%">
@@ -46,54 +130,11 @@ Companion software to the Springer Nature book chapter:
 
 </td>
 </tr>
-<tr>
-<td width="50%">
+</table>
 
-**Kriging density map** -- Ordinary kriging interpolation (exponential model, 5 m grid) of weed seedling counts from 1,685 drone images. Hot spots (red) guide targeted herbicide application.
+### Geostatistics
 
-</td>
-<td width="50%">
-
-**PRESTO satellite correlations** -- Pearson correlations between PRESTO PCA components and kriged weed densities for four species (*A. artemisiifolia* r=0.739, *C. arvensis* r=0.717).
-
-</td>
-</tr>
-<tr>
-<td>
-
-![Kriging density map](docs/images/fig_kriging_density.png)
-
-</td>
-<td>
-
-![PRESTO satellite correlations](docs/images/fig_presto_correlation.png)
-
-</td>
-</tr>
-<tr>
-<td width="50%">
-
-**LISA cluster analysis** -- Bivariate Local Moran's I (PC1 x weed density) identifies hot spots (HH, red), cold spots (LL, blue), and spatial outliers. 68% of pixels are significant at p < 0.05.
-
-</td>
-<td width="50%">
-
-**GWR local R² maps** -- Geographically Weighted Regression captures spatially varying relationships. Panel (B): AMBEL R²=0.882; Panel (C): LENCU R²=0.910 with 49 nearest-neighbor bandwidth.
-
-</td>
-</tr>
-<tr>
-<td>
-
-![LISA clusters](docs/images/fig_lisa_clusters.png)
-
-</td>
-<td>
-
-![GWR maps](docs/images/fig_gwr_maps.png)
-
-</td>
-</tr>
+<table>
 <tr>
 <td width="50%">
 
