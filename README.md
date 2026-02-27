@@ -1,6 +1,9 @@
 # Ragweed AI Toolkit
 
-[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
+[![Tests](https://github.com/agroia-lab/ragweed-ai-toolkit/actions/workflows/test.yml/badge.svg)](https://github.com/agroia-lab/ragweed-ai-toolkit/actions/workflows/test.yml)
+[![Lint](https://github.com/agroia-lab/ragweed-ai-toolkit/actions/workflows/lint.yml/badge.svg)](https://github.com/agroia-lab/ragweed-ai-toolkit/actions/workflows/lint.yml)
+[![Docs](https://github.com/agroia-lab/ragweed-ai-toolkit/actions/workflows/docs.yml/badge.svg)](https://agroia-lab.github.io/ragweed-ai-toolkit)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 **Multi-scale AI toolkit for weed detection, mapping, and spatial analysis.**

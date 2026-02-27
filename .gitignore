@@ -58,6 +58,9 @@ outputs/
 .DS_Store
 Thumbs.db
 
+# MkDocs
+site/
+
 # Environment
 .env
 *.log

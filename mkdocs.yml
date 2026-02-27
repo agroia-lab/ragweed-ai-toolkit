@@ -1,0 +1,50 @@
+site_name: Ragweed AI Toolkit
+site_description: Multi-scale AI toolkit for weed detection, mapping, and spatial analysis
+site_url: https://agroia-lab.github.io/ragweed-ai-toolkit
+repo_url: https://github.com/agroia-lab/ragweed-ai-toolkit
+repo_name: agroia-lab/ragweed-ai-toolkit
+
+docs_dir: mkdocs_docs
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: green
+      accent: amber
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - content.code.copy
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [src]
+          options:
+            show_source: true
+            show_root_heading: true
+
+nav:
+  - Home: index.md
+  - Installation: installation.md
+  - CLI Reference: cli.md
+  - Tutorials:
+    - Detection Workflow: tutorials/detection.md
+    - Cross-Domain Analysis: tutorials/crossdomain.md
+    - Spatial Mapping: tutorials/spatial.md
+    - Satellite Integration: tutorials/satellite.md
+  - API Reference:
+    - detection: api/detection.md
+    - embeddings: api/embeddings.md
+    - crossdomain: api/crossdomain.md
+    - orthomosaic: api/orthomosaic.md
+    - geostatistics: api/geostatistics.md
+    - spatial: api/spatial.md
+    - satellite: api/satellite.md
+    - viz: api/viz.md
+  - Chapter Results: chapter.md
+  - Contributing: contributing.md
+  - Changelog: changelog.md
