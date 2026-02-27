@@ -52,28 +52,25 @@ Date: 2024-01
 # IMPORTS
 # ==============================================================================
 import argparse
-import os
-import sys
 import json
-import time
+import os
+import queue
 import subprocess
+import threading
+import time
 from datetime import datetime
 from pathlib import Path
-import threading
-import queue
 
-import torch
 import matplotlib
+import torch
+
 matplotlib.use('Agg')  # Use non-interactive backend (no display required)
 import matplotlib.pyplot as plt
-from matplotlib.gridspec import GridSpec
 import numpy as np
-
+from matplotlib.gridspec import GridSpec
 from ultralytics import YOLO
-from ultralytics.utils.callbacks.base import add_integration_callbacks
 
 # ragweed_toolkit library imports
-from ragweed_toolkit.detection import TrainingConfig
 
 # TODO: Move GPUMonitor and RealTimeTrainingMonitor to ragweed_toolkit.detection
 # when API supports real-time training visualization.
@@ -680,12 +677,15 @@ def train_yolo(args):
     print(f"ImgSize: {args.imgsz}")
     print(f"Device: {args.device}")
     print(f"Cache: {args.cache}")
-    print(f"AMP: True (FP16)")
+    print("AMP: True (FP16)")
     # Check W&B status
     try:
-        import wandb
-        wandb_status = "enabled" if os.path.exists(os.path.expanduser("~/.netrc")) else "not configured"
-    except ImportError:
+        import importlib.util
+        if importlib.util.find_spec("wandb") is not None:
+            wandb_status = "enabled" if os.path.exists(os.path.expanduser("~/.netrc")) else "not configured"
+        else:
+            wandb_status = "not installed"
+    except Exception:
         wandb_status = "not installed"
     print(f"W&B: {wandb_status}")
     print("=" * 60)

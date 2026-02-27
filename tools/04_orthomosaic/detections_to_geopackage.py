@@ -54,7 +54,6 @@ from ragweed_toolkit.orthomosaic import (
     load_tile_manifest,
 )
 
-
 # ============================================================================
 # BANNER AND OUTPUT HELPERS
 # ============================================================================
@@ -245,13 +244,13 @@ Examples:
             if "confidence" in gdf.columns:
                 confs = gdf["confidence"].dropna()
                 if len(confs) > 0:
-                    print(f"  Confidence stats:")
+                    print("  Confidence stats:")
                     print(f"    Min:    {confs.min():.4f}")
                     print(f"    Median: {confs.median():.4f}")
                     print(f"    Mean:   {confs.mean():.4f}")
                     print(f"    Max:    {confs.max():.4f}")
             if "class_name" in gdf.columns:
-                print(f"  By class:")
+                print("  By class:")
                 for cls, count in gdf["class_name"].value_counts().items():
                     print(f"    {cls:20s}: {count:,}")
         elif source_format == "summary":
@@ -262,7 +261,7 @@ Examples:
             # Print per-class totals from nr_* columns
             nr_cols = [c for c in gdf.columns if c.startswith("nr_")]
             if nr_cols:
-                print(f"  By class:")
+                print("  By class:")
                 for col in nr_cols:
                     total = int(gdf[col].sum())
                     print(f"    {col:20s}: {total:,}")

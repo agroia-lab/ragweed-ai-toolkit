@@ -18,27 +18,24 @@ Output:
     - visualization_umap_3d.html: Interactive 3D UMAP plot
 """
 
-import os
-import sys
 import json
+import sys
 import warnings
 from pathlib import Path
-from datetime import datetime
-from typing import Optional, Tuple, List, Dict
+from typing import Dict, List, Optional, Tuple
+
 import numpy as np
 import pandas as pd
-from tqdm import tqdm
-from PIL import Image
 import torch
-import torch.nn as nn
-from torch.utils.data import Dataset, DataLoader
-from torchvision import transforms, models
+from PIL import Image
+from torch.utils.data import Dataset
+from torchvision import transforms
 
 # ragweed_toolkit library imports
 from ragweed_toolkit.embeddings import (
     FeatureExtractor,
-    extract_embeddings,
     default_transform,
+    extract_embeddings,
     reduce_embeddings,
     umap_scatter,
 )
@@ -257,8 +254,8 @@ def create_combined_visualization(
     Create a combined visualization with all reduction methods.
     """
     import plotly.express as px
-    from plotly.subplots import make_subplots
     import plotly.graph_objects as go
+    from plotly.subplots import make_subplots
 
     # Create subplots
     fig = make_subplots(
@@ -514,10 +511,10 @@ def main():
     # Print statistics
     print("\nDataset statistics:")
     print(f"  Total images: {len(df)}")
-    print(f"\n  By location:")
+    print("\n  By location:")
     for loc, count in df["location"].value_counts().items():
         print(f"    {loc}: {count}")
-    print(f"\n  By source type:")
+    print("\n  By source type:")
     for src, count in df["source_type"].value_counts().items():
         print(f"    {src}: {count}")
 

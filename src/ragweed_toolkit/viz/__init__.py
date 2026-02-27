@@ -22,20 +22,18 @@ Quick usage::
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 # Eagerly export style constants (lightweight, no heavy imports)
 from .style import (
     DPI,
     FONT_FAMILY,
     FONT_SIZE,
     LISA_COLORS,
-    LISA_ORDER,
     LISA_LABELS,
-    ORARA_COLORS,
-    ORARA_RANGES,
+    LISA_ORDER,
     MMD_THRESHOLDS,
     MMD_TIER_COLORS,
+    ORARA_COLORS,
+    ORARA_RANGES,
     SPECIES_COLORS,
     VARIOGRAM_COLORS,
     set_publication_style,

@@ -31,7 +31,6 @@ Output directory: /media/malezainia1/LORENZO/outputs_sugal_25-26/image_embedding
 
 import argparse
 import json
-import os
 import sys
 import warnings
 from datetime import datetime
@@ -41,22 +40,20 @@ from typing import Dict, List, Optional, Tuple
 import numpy as np
 import pandas as pd
 import torch
-import torch.nn as nn
 from PIL import Image
-from PIL.ExifTags import GPSTAGS, TAGS
 from torch.utils.data import DataLoader, Dataset
-from torchvision import models, transforms
 from tqdm import tqdm
+
+from ragweed_toolkit.detection import extract_gps
 
 # ragweed_toolkit library imports
 from ragweed_toolkit.embeddings import (
     FeatureExtractor,
-    extract_embeddings,
     default_transform,
+    extract_embeddings,
     reduce_embeddings,
     umap_scatter,
 )
-from ragweed_toolkit.detection import extract_gps
 
 warnings.filterwarnings("ignore")
 
@@ -193,7 +190,7 @@ class MultiSourceImageDataset(Dataset):
 
                 # Infer source_type from path components
                 source_type = "unknown"
-                path_str = str(img_path).lower()
+                str(img_path).lower()
                 for part in parts:
                     part_lower = part.lower()
                     if "celular" in part_lower:
@@ -838,13 +835,13 @@ def main():
     # Statistics
     print("\nDataset statistics:")
     print(f"  Total images: {len(df):,}")
-    print(f"\n  By source_collection:")
+    print("\n  By source_collection:")
     for src, count in df["source_collection"].value_counts().items():
         print(f"    {src}: {count:,}")
-    print(f"\n  By location (top 20):")
+    print("\n  By location (top 20):")
     for loc, count in df["location"].value_counts().head(20).items():
         print(f"    {loc}: {count:,}")
-    print(f"\n  By source_type:")
+    print("\n  By source_type:")
     for st, count in df["source_type"].value_counts().items():
         print(f"    {st}: {count:,}")
     print()

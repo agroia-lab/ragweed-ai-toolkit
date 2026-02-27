@@ -13,16 +13,16 @@ Demonstrates the spatial autocorrelation pipeline from Chapter 5
 Requires: esda, libpysal, geopandas
 """
 
-import numpy as np
 import geopandas as gpd
+import numpy as np
 from shapely.geometry import Point
 
-from ragweed_toolkit.spatial.morans import compute_bivariate_morans
 from ragweed_toolkit.spatial.lisa import (
     LISA_COLORS,
     compute_bivariate_lisa,
     lisa_summary,
 )
+from ragweed_toolkit.spatial.morans import compute_bivariate_morans
 
 np.random.seed(42)
 
@@ -45,16 +45,16 @@ gdf = gpd.GeoDataFrame(
     crs="EPSG:32719",  # UTM Zone 19S (Chile)
 )
 
-print(f"=== Synthetic Data ===")
+print("=== Synthetic Data ===")
 print(f"  Points     : {n}")
-print(f"  Area       : 500m x 500m")
+print("  Area       : 500m x 500m")
 print(f"  PC1 range  : [{pc1.min():.2f}, {pc1.max():.2f}]")
 print(f"  Density    : [{density.min():.2f}, {density.max():.2f}]")
 
 # ------------------------------------------------------------------ #
 # 2.  Global bivariate Moran's I
 # ------------------------------------------------------------------ #
-print(f"\n=== Bivariate Moran's I (PC1 x Density) ===")
+print("\n=== Bivariate Moran's I (PC1 x Density) ===")
 bv_result = compute_bivariate_morans(
     gdf, var_x="pc1", var_y="density",
     threshold=60.0,      # distance band in metres
@@ -69,7 +69,7 @@ print(f"  n          = {bv_result.n}")
 # ------------------------------------------------------------------ #
 # 3.  LISA decomposition
 # ------------------------------------------------------------------ #
-print(f"\n=== LISA Clusters ===")
+print("\n=== LISA Clusters ===")
 lisa_gdf = compute_bivariate_lisa(
     gdf, var_x="pc1", var_y="density",
     threshold=60.0,
@@ -85,7 +85,7 @@ for cluster, stats in summary.items():
 # ------------------------------------------------------------------ #
 # 4.  Interpretation guide
 # ------------------------------------------------------------------ #
-print(f"\n=== Cluster Interpretation ===")
+print("\n=== Cluster Interpretation ===")
 print("  HH (red)    : Hot spot -- high PC1 surrounded by high density")
 print("  LL (blue)   : Cold spot -- low PC1 surrounded by low density")
 print("  HL (orange) : Spatial outlier -- high PC1, low density neighbors")

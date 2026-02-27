@@ -28,16 +28,15 @@ Dependencies: pygeoda, geopandas, pandas
 
 import argparse
 import sys
-from pathlib import Path
-from typing import Optional, Tuple, List
 from datetime import datetime
+from pathlib import Path
+from typing import Optional, Tuple
 
-import pygeoda
 import geopandas as gpd
 import pandas as pd
-import numpy as np
+import pygeoda
 
-from ragweed_toolkit.spatial import LISA_COLORS, QUADRANT_MAP
+from ragweed_toolkit.spatial import LISA_COLORS
 
 # Mapping from pygeoda cluster codes to ragweed_toolkit LISA_COLORS keys.
 # pygeoda: 0=NS, 1=HH, 2=LL, 3=LH, 4=HL
@@ -235,7 +234,7 @@ def analyze_batch(input_pattern: str, output_name: str, k: int = 8) -> Tuple[gpd
         raise ValueError(f"No files found matching: {input_pattern}")
 
     print(f"\n{'='*60}")
-    print(f"BATCH ISOLATED ANALYSIS")
+    print("BATCH ISOLATED ANALYSIS")
     print(f"Analyzing {len(input_files)} paddocks separately")
     print('='*60)
 
@@ -251,7 +250,7 @@ def analyze_batch(input_pattern: str, output_name: str, k: int = 8) -> Tuple[gpd
             orara_col = find_orara_column(gdf)
 
             if not orara_col:
-                print(f"  ⚠ Skipping: No ORARA column")
+                print("  ⚠ Skipping: No ORARA column")
                 continue
 
             if len(gdf) < 10:
@@ -479,7 +478,7 @@ Examples:
         print('='*60)
         print("\nTo visualize in QGIS:")
         print(f"  1. Open: {output_gpkg}")
-        print(f"  2. Run style script in Python Console (Ctrl+Alt+P)")
+        print("  2. Run style script in Python Console (Ctrl+Alt+P)")
 
     except Exception as e:
         print(f"\n✗ Error: {e}")

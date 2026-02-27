@@ -42,7 +42,6 @@ from ragweed_toolkit.crossdomain import (
     validate_labels,
 )
 
-
 # ============================================================================
 # MAIN BUILD
 # ============================================================================
@@ -141,7 +140,7 @@ def build_dataset(args) -> None:
     if args.validate and not args.dry_run:
         issues = validate_labels(out_labels, n=5)
         if issues:
-            print(f"\n[!] Validation issues found:")
+            print("\n[!] Validation issues found:")
             for issue in issues:
                 print(f"    {issue}")
         else:

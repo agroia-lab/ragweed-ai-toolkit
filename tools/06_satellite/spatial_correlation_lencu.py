@@ -13,23 +13,26 @@ Output: outputs/lencu_presto/spatial_analysis/
 
 import sys
 import warnings
-import numpy as np
-import pandas as pd
+
 import geopandas as gpd
 import matplotlib
+import numpy as np
+import pandas as pd
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from matplotlib.lines import Line2D
-from shapely.geometry import Point
-from scipy.spatial.distance import pdist, squareform
-from libpysal.weights import DistanceBand
 from esda.moran import Moran_BV, Moran_Local_BV
+from libpysal.weights import DistanceBand
+from matplotlib.lines import Line2D
+from scipy.spatial.distance import pdist
+from shapely.geometry import Point
 
 warnings.filterwarnings("ignore", category=FutureWarning)
 warnings.filterwarnings("ignore", category=UserWarning)
 
 # ---- Portable path resolution ----
 from pathlib import Path
+
 _script_dir = Path(__file__).resolve().parent
 _project_root = _script_dir.parent.parent
 sys.path.insert(0, str(_project_root))
@@ -39,8 +42,11 @@ sys.path.insert(0, str(_project_root / "src"))
 from ragweed_toolkit.spatial import (
     LISA_COLORS,
     QUADRANT_MAP,
+)
+from ragweed_toolkit.spatial import (
     compute_cross_variogram as _lib_compute_cross_variogram,
 )
+
 # Note: build_distance_weights in the library takes a GeoDataFrame, while
 # this script's build_weights takes a DataFrame with x/y columns directly.
 # Keeping the script-specific version for backward compatibility.
@@ -57,6 +63,7 @@ DATA_PATH = "/home/malezainia1/dev/INIA_DeepLearning_Ubuntu_mod_lleon/outputs/le
 OUT_DIR = "/home/malezainia1/dev/INIA_DeepLearning_Ubuntu_mod_lleon/outputs/lencu_presto/spatial_analysis"
 
 import os
+
 os.makedirs(OUT_DIR, exist_ok=True)
 
 
@@ -311,7 +318,7 @@ def main():
     w = build_weights(df)
 
     moran_df = bivariate_global_moran(df, w)
-    gdf_lisa = bivariate_local_lisa(df, w)
+    bivariate_local_lisa(df, w)
     vario_stats = cross_variogram_analysis(df)
     save_summary(moran_df, vario_stats)
 

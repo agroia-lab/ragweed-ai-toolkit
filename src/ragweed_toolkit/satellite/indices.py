@@ -129,7 +129,6 @@ def compute_spectral_indices_ee(image):
     Returns:
         ``ee.Image`` with one band per index.
     """
-    import ee
 
     B2 = image.select("B2").toFloat()
     B3 = image.select("B3").toFloat()
@@ -175,13 +174,16 @@ def main():
     )
     parser.add_argument("--input", required=True, help="Input 10-band GeoTIFF (B2-B12)")
     parser.add_argument("--output-dir", required=True, help="Output directory for index GeoTIFFs")
-    parser.add_argument("--indices", nargs="+", default=None,
-                        choices=ALL_INDEX_NAMES,
-                        help=f"Indices to compute (default: all). Choices: {', '.join(ALL_INDEX_NAMES)}")
+    parser.add_argument(
+        "--indices", nargs="+", default=None,
+        choices=ALL_INDEX_NAMES,
+        help="Indices to compute (default: all)",
+    )
     args = parser.parse_args()
 
-    import rasterio
     from pathlib import Path
+
+    import rasterio
 
     with rasterio.open(args.input) as src:
         spectral = src.read()

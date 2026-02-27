@@ -17,16 +17,14 @@ from pathlib import Path
 
 warnings.filterwarnings("ignore")
 
-import numpy as np
-import pandas as pd
 import geopandas as gpd
 import matplotlib.pyplot as plt
-from matplotlib.gridspec import GridSpec
-from sklearn.preprocessing import StandardScaler
-from shapely.geometry import Point
-
+import numpy as np
+import pandas as pd
 from mgwr.gwr import GWR
 from mgwr.sel_bw import Sel_BW
+from shapely.geometry import Point
+from sklearn.preprocessing import StandardScaler
 from spreg import OLS
 
 # ---- Portable path resolution ----

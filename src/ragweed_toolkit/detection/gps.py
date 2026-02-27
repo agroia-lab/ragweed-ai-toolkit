@@ -23,7 +23,10 @@ Usage::
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Sequence, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Sequence, Union
+
+if TYPE_CHECKING:
+    import geopandas
 
 from PIL import Image
 from PIL.ExifTags import GPSTAGS, TAGS

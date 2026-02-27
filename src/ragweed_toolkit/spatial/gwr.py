@@ -21,15 +21,14 @@ Dependencies: mgwr, spreg, numpy, geopandas, sklearn
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import Optional, Sequence
+from dataclasses import dataclass
+from typing import Sequence
 
-import numpy as np
 import geopandas as gpd
-from sklearn.preprocessing import StandardScaler
-
+import numpy as np
 from mgwr.gwr import GWR as _GWR
 from mgwr.sel_bw import Sel_BW
+from sklearn.preprocessing import StandardScaler
 from spreg import OLS
 
 

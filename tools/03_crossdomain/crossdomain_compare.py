@@ -47,7 +47,6 @@ from ragweed_toolkit.crossdomain import (
     load_eval_results,
 )
 
-
 # ============================================================================
 # MAIN
 # ============================================================================
@@ -122,7 +121,7 @@ def run_comparison(args):
     print("  Step 2: Generating comparison outputs")
     print("-" * 70)
 
-    combined = compare_evaluations(
+    compare_evaluations(
         eval_paths=[str(p) for p in eval_paths],
         output_dir=str(output_dir),
         labels=labels,
@@ -145,7 +144,7 @@ def run_comparison(args):
     print("  COMPARISON COMPLETE")
     print("=" * 70)
     print(f"  Output directory: {output_dir}")
-    print(f"  Files generated:")
+    print("  Files generated:")
     print(f"    - {md_path.name}")
     print(f"    - {chart_path.name}")
     print(f"    - {json_path.name}")

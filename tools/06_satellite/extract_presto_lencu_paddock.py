@@ -60,19 +60,14 @@ import sys
 import warnings
 from pathlib import Path
 
+import geopandas as gpd
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import geopandas as gpd
 import rasterio
-from rasterio.mask import mask as rio_mask
 from rasterio.crs import CRS
-from rasterio.warp import reproject, Resampling
-from rasterio.transform import from_bounds
-from shapely.geometry import box, mapping, Point
-import matplotlib.pyplot as plt
-import matplotlib.colors as mcolors
-from matplotlib.gridspec import GridSpec
-import matplotlib.cm as cm
+from rasterio.mask import mask as rio_mask
+from shapely.geometry import box, mapping
 
 warnings.filterwarnings("ignore", category=UserWarning)
 warnings.filterwarnings("ignore", category=FutureWarning)
@@ -86,9 +81,9 @@ sys.path.insert(0, str(_project_root / "src"))
 # --- Library imports (replacing sibling-script imports) ---
 from ragweed_toolkit.satellite.presto import (
     extract_presto_embeddings as _lib_extract_presto,
+)
+from ragweed_toolkit.satellite.presto import (
     raster_to_grid as _lib_raster_to_grid,
-    PRESTO_DIMENSIONS,
-    PRESTO_NODATA,
 )
 
 # -------------------------------------------------------------------------
@@ -158,7 +153,7 @@ def run_extraction():
     print("\n" + "="*60)
     print("STEP 1: Extract Presto Embeddings via Copernicus Data Space")
     print("="*60)
-    print(f"  Paddock:  Santa Rosa Lentil Field")
+    print("  Paddock:  Santa Rosa Lentil Field")
     print(f"  Period:   {START_DATE} to {END_DATE} (6 months)")
     print(f"  Output:   {EMBEDDINGS_TIFF}")
     print()
@@ -236,7 +231,6 @@ def _raster_to_gdf_inline(tiff_path: Path, paddock_gdf: gpd.GeoDataFrame) -> gpd
     Both produce valid results; this version is kept for backward compatibility.
     """
     import numpy as np
-    from shapely.geometry import box
 
     NODATA  = 65535  # UInt16 nodata
     SCALE   = 1.0 / 10000.0
@@ -274,7 +268,8 @@ def _raster_to_gdf_inline(tiff_path: Path, paddock_gdf: gpd.GeoDataFrame) -> gpd
                 y = out_tr.f + r * out_tr.e
                 cell = box(x, y, x + abs(out_tr.a), y - abs(out_tr.e))
                 if cell.intersects(geom):
-                    rows.append(r);  cols.append(c)
+                    rows.append(r)
+                    cols.append(c)
                     cells.append(cell)
                     embs.append(out_f[:, r, c])
 
@@ -396,7 +391,7 @@ def run_pca_umap(df: pd.DataFrame) -> pd.DataFrame:
     X_pca = pca.fit_transform(X_scaled)
 
     var_explained = pca.explained_variance_ratio_ * 100
-    print(f"  PCA variance explained:")
+    print("  PCA variance explained:")
     for i, v in enumerate(var_explained[:5]):
         print(f"    PC{i+1}: {v:.1f}%")
     print(f"    Total (10 PCs): {var_explained.sum():.1f}%")
@@ -417,7 +412,7 @@ def run_pca_umap(df: pd.DataFrame) -> pd.DataFrame:
         df.loc[mask, "UMAP1"] = X_umap[:, 0]
         df.loc[mask, "UMAP2"] = X_umap[:, 1]
         umap_ok = True
-        print(f"  UMAP: 2D projection computed")
+        print("  UMAP: 2D projection computed")
     except ImportError:
         print("  UMAP not available (pip install umap-learn)")
 
@@ -741,12 +736,12 @@ def main():
     print(f"\n  Output files in: {OUTPUT_DIR}/")
     for f in sorted(OUTPUT_DIR.glob("fig_*.png")):
         print(f"    {f.name}")
-    print(f"    correlation_table.csv")
-    print(f"    analysis_results.csv")
+    print("    correlation_table.csv")
+    print("    analysis_results.csv")
 
     print("\n  To view in QGIS:")
     print(f"    Layer > Add Vector > {EMBEDDINGS_GPKG}")
-    print(f"    Style by 'PC1' column (graduated colors)")
+    print("    Style by 'PC1' column (graduated colors)")
 
 
 if __name__ == "__main__":

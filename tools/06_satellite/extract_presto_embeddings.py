@@ -40,35 +40,17 @@ Usage (IMPORTANT: Presto requires 12-month windows):
 """
 
 import argparse
+import importlib.util
 import sys
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 from typing import Optional, Tuple
-import tempfile
-import time
 
 import geopandas as gpd
 import pandas as pd
-import numpy as np
-from shapely.geometry import box, mapping
-from tqdm import tqdm
 
-# Optional imports for raster processing
-try:
-    import rasterio
-    from rasterio.mask import mask as rio_mask
-    RASTERIO_AVAILABLE = True
-except ImportError:
-    RASTERIO_AVAILABLE = False
-
-# Optional imports for clustering/PCA
-try:
-    from sklearn.cluster import KMeans
-    from sklearn.decomposition import PCA, IncrementalPCA
-    from sklearn.preprocessing import StandardScaler
-    SKLEARN_AVAILABLE = True
-except ImportError:
-    SKLEARN_AVAILABLE = False
+RASTERIO_AVAILABLE = importlib.util.find_spec("rasterio") is not None
+SKLEARN_AVAILABLE = importlib.util.find_spec("sklearn") is not None
 
 # Project paths
 PROJECT_ROOT = Path(__file__).parent.parent.parent
@@ -76,15 +58,20 @@ sys.path.insert(0, str(PROJECT_ROOT / "src"))
 
 # --- Library imports (replacing internal duplicates) ---
 from ragweed_toolkit.satellite.presto import (
-    extract_presto_embeddings as _lib_extract_presto,
-    raster_to_grid as _lib_raster_to_grid,
-    apply_clustering as _lib_apply_clustering,
-    apply_pca as _lib_apply_pca,
     PRESTO_DIMENSIONS,
-    PRESTO_SCALE,
-    PRESTO_OFFSET,
-    PRESTO_NODATA,
     SEASON_WINDOWS_12M,
+)
+from ragweed_toolkit.satellite.presto import (
+    apply_clustering as _lib_apply_clustering,
+)
+from ragweed_toolkit.satellite.presto import (
+    apply_pca as _lib_apply_pca,
+)
+from ragweed_toolkit.satellite.presto import (
+    extract_presto_embeddings as _lib_extract_presto,
+)
+from ragweed_toolkit.satellite.presto import (
+    raster_to_grid as _lib_raster_to_grid,
 )
 
 # Output directories
@@ -116,31 +103,20 @@ OPENEO_URL = "https://openeo.dataspace.copernicus.eu"
 
 def check_worldcereal_available() -> bool:
     """Check if WorldCereal package is available."""
-    try:
-        from worldcereal.job import create_embeddings_process_graph
-        from worldcereal.parameters import EmbeddingsParameters
-        return True
-    except ImportError:
-        return False
+    return importlib.util.find_spec("worldcereal") is not None
 
 
 def check_dependencies() -> Tuple[bool, list]:
     """Check if required packages are installed."""
     missing = []
 
-    try:
-        import openeo
-    except ImportError:
+    if importlib.util.find_spec("openeo") is None:
         missing.append("openeo")
 
-    try:
-        import worldcereal
-    except ImportError:
+    if importlib.util.find_spec("worldcereal") is None:
         missing.append("worldcereal")
 
-    try:
-        import rasterio
-    except ImportError:
+    if importlib.util.find_spec("rasterio") is None:
         missing.append("rasterio")
 
     if missing:
@@ -200,9 +176,9 @@ def get_openeo_connection():
     try:
         connection.authenticate_oidc()
         return connection
-    except Exception as e:
-        print(f"Error: Please authenticate first:")
-        print(f"  python extract_presto_embeddings.py --authenticate")
+    except Exception:
+        print("Error: Please authenticate first:")
+        print("  python extract_presto_embeddings.py --authenticate")
         return None
 
 
@@ -359,7 +335,7 @@ def apply_local_pca(gdf, n_components=3):
     print(f"\nApplying LOCAL PCA (n_components={n_components}) per paddock...")
     result = _lib_apply_pca(gdf, n_components=n_components, scope="local")
     for paddock in result['paddock'].unique():
-        col = f'pca_local_1'
+        col = 'pca_local_1'
         if col in result.columns:
             mask = (result['paddock'] == paddock) & result[col].notna()
             print(f"  {paddock}: PCA computed ({mask.sum()} cells)")
@@ -469,9 +445,9 @@ NOTE: For 25-26 season, data is not yet available for Jan-Mar 2026.
     if args.cluster:
         print(f"Clustering: K={args.cluster}")
     if args.pca:
-        print(f"PCA: enabled")
+        print("PCA: enabled")
     if args.local:
-        print(f"Local analysis: enabled")
+        print("Local analysis: enabled")
     if args.raster:
         print(f"Raster: {args.raster}")
     print()
@@ -601,7 +577,7 @@ NOTE: For 25-26 season, data is not yet available for Jan-Mar 2026.
         if args.local:
             print(f"     Or: cluster_local_{args.cluster} (per-paddock)")
     if args.pca:
-        print(f"  3. PCA: pca_global_1 (graduated)")
+        print("  3. PCA: pca_global_1 (graduated)")
 
     return combined
 

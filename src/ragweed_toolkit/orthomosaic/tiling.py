@@ -18,7 +18,7 @@ import json
 import math
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List
 
 import numpy as np
 import rasterio
@@ -200,7 +200,10 @@ def main():
     )
     parser.add_argument("--input", required=True, help="Path to input GeoTIFF orthomosaic")
     parser.add_argument("--output", required=True, help="Output directory for tiles")
-    parser.add_argument("--tile-size", type=int, default=1024, help="Tile size in pixels (default: 1024)")
+    parser.add_argument(
+        "--tile-size", type=int, default=1024,
+        help="Tile size in pixels (default: 1024)",
+    )
     parser.add_argument("--overlap", type=int, default=0, help="Overlap in pixels (default: 0)")
     parser.add_argument("--min-valid", type=float, default=0.9,
                         help="Min fraction of valid pixels to keep tile (default: 0.9)")
@@ -216,7 +219,7 @@ def main():
         quality=args.quality,
     )
 
-    print(f"\nTiling complete:")
+    print("\nTiling complete:")
     print(f"  Input: {summary['input_path']}")
     print(f"  CRS: {summary['crs']}")
     print(f"  Raster: {summary['raster_width']} x {summary['raster_height']} px")

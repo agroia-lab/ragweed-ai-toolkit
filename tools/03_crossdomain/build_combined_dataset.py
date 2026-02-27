@@ -33,7 +33,6 @@ from pathlib import Path
 
 from ragweed_toolkit.crossdomain import build_combined_dataset, validate_labels
 
-
 # ============================================================================
 # MAIN BUILD
 # ============================================================================
@@ -159,7 +158,7 @@ def build_dataset(args) -> None:
     # Optional validation
     # -----------------------------------------------------------------------
     if args.validate and not args.dry_run:
-        print(f"\n[+] Validating random labels per split...")
+        print("\n[+] Validating random labels per split...")
         all_ok = True
         for split in ["train", "valid", "test"]:
             label_dir = output_dir / split / "labels"

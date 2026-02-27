@@ -17,7 +17,6 @@ compute_detection_summary
 """
 
 import json
-from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional
 
@@ -122,7 +121,8 @@ def _load_summary_records(
         for item in data["per_image_results"]:
             name = item.get("image", "")
             counts = item.get("sahi_by_class", {})
-            per_image[name] = {"counts": counts, "total": item.get("sahi_total", sum(counts.values()))}
+            total = item.get("sahi_total", sum(counts.values()))
+            per_image[name] = {"counts": counts, "total": total}
     elif "per_image" in data:
         for name, counts in data["per_image"].items():
             per_image[name] = {"counts": counts, "total": sum(counts.values())}

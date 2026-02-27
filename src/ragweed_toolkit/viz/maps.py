@@ -21,28 +21,27 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Optional, Sequence, Union
 
-import numpy as np
 import matplotlib
-import matplotlib.pyplot as plt
 import matplotlib.patheffects as pe
+import matplotlib.pyplot as plt
+import numpy as np
 from matplotlib.lines import Line2D
 from matplotlib.patches import Polygon as MplPolygon
 
 from .style import (
-    DPI,
-    FONT_SIZE,
-    PANEL_LABEL_SIZE,
-    LISA_COLORS,
-    LISA_ORDER,
+    BOUNDARY_COLOR,
+    BOUNDARY_LS,
+    BOUNDARY_LW,
     DARK_BG,
     DARK_FACE,
     DARK_LEGEND_BG,
-    BOUNDARY_COLOR,
-    BOUNDARY_LW,
-    BOUNDARY_LS,
+    DPI,
+    FONT_SIZE,
+    LISA_COLORS,
+    LISA_ORDER,
+    PANEL_LABEL_SIZE,
     set_publication_style,
 )
-
 
 # ---------------------------------------------------------------------------
 # Kriged density maps
@@ -629,7 +628,7 @@ def _add_scale_bar(
     length_m: float,
 ) -> None:
     """Add a manual scale bar to lower-right of axes."""
-    x_min, x_max = float(np.min(x)), float(np.max(x))
+    _x_min, x_max = float(np.min(x)), float(np.max(x))
     y_min = float(np.min(y))
     y_range = float(np.max(y)) - y_min
 

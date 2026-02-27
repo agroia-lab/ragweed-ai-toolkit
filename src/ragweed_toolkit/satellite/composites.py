@@ -19,12 +19,10 @@ export_composites
     Batch export NDVI and/or RGB for multiple paddocks.
 """
 
-from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import List, Optional
 
 import ee
 import geopandas as gpd
-
 
 # Cloud mask: SCL clear values (vegetation, bare soil, water, unclassified, snow)
 SCL_CLEAR_VALUES = [4, 5, 6, 7, 11]

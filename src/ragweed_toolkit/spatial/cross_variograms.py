@@ -95,8 +95,8 @@ def compute_cross_variogram(
 
     for k in range(n_lags):
         lo, hi = lag_edges[k], lag_edges[k + 1]
-        mid = (lo + hi) / 2
-        radius = (hi - lo) / 2
+        (lo + hi) / 2
+        (hi - lo) / 2
 
         # Find all pairs within hi
         pairs_hi = tree.query_pairs(r=hi, output_type="ndarray")

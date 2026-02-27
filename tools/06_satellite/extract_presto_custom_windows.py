@@ -45,32 +45,20 @@ Examples:
 """
 
 import argparse
+import importlib.util
 import sys
-from pathlib import Path
 from datetime import datetime
-from dateutil.relativedelta import relativedelta
-from typing import Optional, List, Tuple
+from pathlib import Path
+from typing import Optional, Tuple
 
 import geopandas as gpd
-import pandas as pd
 import numpy as np
+import pandas as pd
+from dateutil.relativedelta import relativedelta
 from shapely.geometry import box, mapping
 
-# Optional imports
-try:
-    import rasterio
-    from rasterio.mask import mask as rio_mask
-    RASTERIO_AVAILABLE = True
-except ImportError:
-    RASTERIO_AVAILABLE = False
-
-try:
-    from sklearn.cluster import KMeans
-    from sklearn.decomposition import PCA, IncrementalPCA
-    from sklearn.preprocessing import StandardScaler
-    SKLEARN_AVAILABLE = True
-except ImportError:
-    SKLEARN_AVAILABLE = False
+RASTERIO_AVAILABLE = importlib.util.find_spec("rasterio") is not None
+SKLEARN_AVAILABLE = importlib.util.find_spec("sklearn") is not None
 
 # ---- Portable path resolution ----
 _script_dir = Path(__file__).resolve().parent
@@ -80,25 +68,26 @@ sys.path.insert(0, str(_project_root / "src"))
 
 # --- Library imports (replacing sibling-script imports) ---
 from ragweed_toolkit.satellite.presto import (
-    extract_presto_embeddings as _lib_extract_presto,
-    raster_to_grid as _lib_raster_to_grid,
-    apply_clustering as _lib_apply_clustering,
-    apply_pca as _lib_apply_pca,
     PRESTO_DIMENSIONS,
-    PRESTO_SCALE,
-    PRESTO_OFFSET,
     PRESTO_NODATA,
+    PRESTO_OFFSET,
+    PRESTO_SCALE,
+)
+from ragweed_toolkit.satellite.presto import (
+    apply_clustering as _lib_apply_clustering,
+)
+from ragweed_toolkit.satellite.presto import (
+    apply_pca as _lib_apply_pca,
 )
 
 # --- Import shared helpers from the library-backed sibling script ---
 # These functions were already kept as script-specific in extract_presto_embeddings.py
 try:
     from extract_presto_embeddings import (
-        check_dependencies,
         authenticate_openeo,
-        get_openeo_connection,
-        load_paddock_boundaries,
+        check_dependencies,
         get_paddock_extent_utm,
+        load_paddock_boundaries,
     )
     ORIGINAL_AVAILABLE = True
 except ImportError:
@@ -259,10 +248,10 @@ def extract_presto_embeddings_custom(
         Path to downloaded GeoTIFF or None if failed
     """
     try:
-        from worldcereal.job import create_embeddings_process_graph, INFERENCE_JOB_OPTIONS
-        from worldcereal.parameters import EmbeddingsParameters
         from openeo_gfmap.spatial import BoundingBoxExtent
         from openeo_gfmap.temporal import TemporalContext
+        from worldcereal.job import INFERENCE_JOB_OPTIONS, create_embeddings_process_graph
+        from worldcereal.parameters import EmbeddingsParameters
     except ImportError as e:
         print(f"Error: WorldCereal package not available: {e}")
         print("Install with: pip install worldcereal openeo openeo-gfmap")
@@ -369,6 +358,9 @@ def raster_to_grid_embeddings_custom(
         return gpd.GeoDataFrame()
 
     print(f"\n  Converting raster to grid for {paddock_name}...")
+
+    import rasterio
+    from rasterio.mask import mask as rio_mask
 
     with rasterio.open(raster_path) as src:
         n_bands = src.count
@@ -501,13 +493,13 @@ def apply_local_clustering(gdf, n_clusters):
 
 def apply_global_pca(gdf):
     """Global PCA wrapper around library function."""
-    print(f"  Applying global PCA...")
+    print("  Applying global PCA...")
     return _lib_apply_pca(gdf, n_components=3, scope="global")
 
 
 def apply_local_pca(gdf):
     """Per-paddock PCA wrapper around library function."""
-    print(f"  Applying local (per-paddock) PCA...")
+    print("  Applying local (per-paddock) PCA...")
     result = gdf.copy()
     for paddock in result['paddock'].unique():
         mask = result['paddock'] == paddock

@@ -18,13 +18,13 @@ Usage:
 
 import argparse
 import sys
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 
 import ee
 import geopandas as gpd
-import pandas as pd
 import numpy as np
+import pandas as pd
 from shapely.geometry import box
 from tqdm import tqdm
 
@@ -43,7 +43,7 @@ PROJECT_ROOT = _script_dir.parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 sys.path.insert(0, str(PROJECT_ROOT / "src"))
 
-from scripts.utils.paths import get_paths, get_external_drive
+from scripts.utils.paths import get_paths
 
 # Get paths from config
 _paths = get_paths()
@@ -286,7 +286,7 @@ def apply_clustering(
         print(f"WARNING: Not enough valid embeddings ({len(embeddings)}) for clustering")
         return gdf
 
-    print(f"\nApplying KMeans clustering...")
+    print("\nApplying KMeans clustering...")
     scaler = StandardScaler()
     emb_scaled = scaler.fit_transform(embeddings)
 
@@ -335,7 +335,7 @@ def apply_pca(
     embeddings = gdf.loc[valid_mask, emb_cols].values
 
     if len(embeddings) < n_components:
-        print(f"WARNING: Not enough valid embeddings for PCA")
+        print("WARNING: Not enough valid embeddings for PCA")
         return gdf
 
     print(f"\nApplying PCA (n_components={n_components})...")

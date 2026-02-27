@@ -26,25 +26,22 @@ Author: Claude Code
 Date: 2026-02-06
 """
 
-import os
 import sys
 import time
 import warnings
-from pathlib import Path
 from itertools import combinations
+from pathlib import Path
 
-import numpy as np
-import pandas as pd
 import geopandas as gpd
 import matplotlib
+import numpy as np
+import pandas as pd
+
 matplotlib.use("Agg")  # Non-interactive backend for saving figures
 import matplotlib.pyplot as plt
-from matplotlib.colors import Normalize
-from matplotlib import cm
+from scipy.stats import pearsonr
 from sklearn.decomposition import PCA
 from sklearn.metrics import adjusted_rand_score, normalized_mutual_info_score
-from sklearn.metrics.pairwise import cosine_similarity
-from scipy.stats import pearsonr
 
 warnings.filterwarnings("ignore", category=FutureWarning)
 warnings.filterwarnings("ignore", category=UserWarning)
@@ -666,7 +663,7 @@ def analysis_5_unique_information(datasets):
     for w in window_names:
         mat = get_embedding_matrix(datasets[w])
         pca = PCA(n_components=n_components)
-        pcs = pca.fit_transform(mat)
+        pca.fit_transform(mat)
         per_window_pca[w] = pca
         per_window_components[w] = pca.components_  # shape (n_components, 128)
         per_window_explained[w] = pca.explained_variance_ratio_
@@ -696,7 +693,7 @@ def analysis_5_unique_information(datasets):
 
         cross_corr_results[(i, j)] = corr_mat
         # Maximum correlation for each PC in window A with any PC in window B
-        max_corr_a = corr_mat.max(axis=1)
+        corr_mat.max(axis=1)
         short_a, short_b = SHORT_LABELS[w_a], SHORT_LABELS[w_b]
         print(f"\n    {short_a} PCs -> best match in {short_b}:")
         for pc in range(n_components):
@@ -705,7 +702,7 @@ def analysis_5_unique_information(datasets):
                   f"(|r|={corr_mat[pc, best_match]:.3f})")
 
     # ── Plot 5a: Cross-correlation matrices ──
-    n_pairs = len(list(combinations(range(len(window_names)), 2)))
+    len(list(combinations(range(len(window_names)), 2)))
     fig, axes = plt.subplots(2, 3, figsize=(18, 11))
     axes = axes.flatten()
 
@@ -823,7 +820,7 @@ def write_summary(sim_matrix, pair_results, ari_matrix, nmi_matrix,
         f.write("=" * 70 + "\n")
         f.write("PRESTO CROSS-WINDOW COMPARISON SUMMARY\n")
         f.write("=" * 70 + "\n\n")
-        f.write(f"Generated: 2026-02-06\n")
+        f.write("Generated: 2026-02-06\n")
         f.write(f"Number of windows: {len(window_names)}\n\n")
 
         f.write("WINDOWS:\n")
@@ -904,10 +901,10 @@ def write_summary(sim_matrix, pair_results, ari_matrix, nmi_matrix,
         low_sens = [p for p in sorted_paddocks
                     if sensitivity[p]["sensitivity"] < 0.3]
         f.write(f"  HIGH sensitivity (>0.5): {', '.join(high_sens) if high_sens else 'None'}\n")
-        f.write(f"    -> Embeddings change significantly across windows.\n")
-        f.write(f"    -> These paddocks benefit most from multi-window analysis.\n")
+        f.write("    -> Embeddings change significantly across windows.\n")
+        f.write("    -> These paddocks benefit most from multi-window analysis.\n")
         f.write(f"  LOW sensitivity (<0.3): {', '.join(low_sens) if low_sens else 'None'}\n")
-        f.write(f"    -> Stable embeddings; a single window may suffice.\n")
+        f.write("    -> Stable embeddings; a single window may suffice.\n")
 
         # Analysis 2 & 5
         f.write("\n" + "=" * 70 + "\n")
@@ -964,7 +961,7 @@ def write_summary(sim_matrix, pair_results, ari_matrix, nmi_matrix,
         f.write("=" * 70 + "\n\n")
         for fname in sorted(OUTPUT_DIR.glob("*.png")):
             f.write(f"  {fname.name}\n")
-        f.write(f"  SUMMARY.txt\n")
+        f.write("  SUMMARY.txt\n")
 
     print(f"\n  Summary written to: {summary_path}")
 
@@ -1016,7 +1013,7 @@ def main():
     dt_total = time.time() - t0_total
     print(f"\nTotal execution time: {dt_total:.1f}s")
     print(f"\nAll outputs saved to:\n  {OUTPUT_DIR}/")
-    print(f"\nFiles generated:")
+    print("\nFiles generated:")
     for f in sorted(OUTPUT_DIR.glob("*")):
         size_kb = f.stat().st_size / 1024
         print(f"  {f.name:50s} ({size_kb:.0f} KB)")

@@ -18,12 +18,11 @@ Dependencies: esda, libpysal, geopandas, numpy
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Optional, Sequence
+from typing import Optional
 
-import numpy as np
 import geopandas as gpd
-from libpysal.weights import DistanceBand
 from esda.moran import Moran_BV
+from libpysal.weights import DistanceBand
 
 
 @dataclass

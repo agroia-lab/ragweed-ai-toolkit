@@ -46,41 +46,23 @@ Statistics calculated per pixel:
 """
 
 import argparse
+import importlib.util
 import sys
-from pathlib import Path
-from datetime import datetime, timedelta
-from typing import Optional, List, Tuple, Dict
-import json
 import time
+from datetime import datetime
+from pathlib import Path
+from typing import List
 
 import ee
 import geopandas as gpd
-import pandas as pd
 import numpy as np
-from shapely.geometry import box, mapping
+import pandas as pd
+from shapely.geometry import box
 from shapely.ops import unary_union
-from tqdm import tqdm
 
-# Optional imports
-try:
-    import rasterio
-    from rasterio.mask import mask as rio_mask
-    RASTERIO_AVAILABLE = True
-except ImportError:
-    RASTERIO_AVAILABLE = False
-
-try:
-    from sklearn.cluster import KMeans
-    from sklearn.preprocessing import StandardScaler
-    SKLEARN_AVAILABLE = True
-except ImportError:
-    SKLEARN_AVAILABLE = False
-
-try:
-    from scipy import stats as scipy_stats
-    SCIPY_AVAILABLE = True
-except ImportError:
-    SCIPY_AVAILABLE = False
+RASTERIO_AVAILABLE = importlib.util.find_spec("rasterio") is not None
+SKLEARN_AVAILABLE = importlib.util.find_spec("sklearn") is not None
+SCIPY_AVAILABLE = importlib.util.find_spec("scipy") is not None
 
 # Project paths
 _script_dir = Path(__file__).resolve().parent
@@ -88,17 +70,16 @@ PROJECT_ROOT = _script_dir.parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 sys.path.insert(0, str(PROJECT_ROOT / "src"))
 
-from scripts.utils.paths import get_paths, get_external_drive
+from scripts.utils.paths import get_external_drive, get_paths
 
 # --- Library imports (replacing internal duplicates) ---
 from ragweed_toolkit.satellite.ndvi import (
-    compute_ndvi_statistics,
-    compute_ndvi_slope,
-    compute_date_of_max,
-    export_ndvi_stats as _lib_export_ndvi_stats,
-    extract_raster_to_grid,
-    create_risk_zones,
     CROP_SEASON_WINDOWS,
+    create_risk_zones,
+    extract_raster_to_grid,
+)
+from ragweed_toolkit.satellite.ndvi import (
+    export_ndvi_stats as _lib_export_ndvi_stats,
 )
 
 # Get paths from config
@@ -305,10 +286,12 @@ def apply_clustering(
     X = gdf.loc[valid_mask, available_features].values
 
     # Scale features
+    from sklearn.preprocessing import StandardScaler
     scaler = StandardScaler()
     X_scaled = scaler.fit_transform(X)
 
     # Cluster for each k
+    from sklearn.cluster import KMeans
     for k in n_clusters:
         col_name = f'cluster_{k}'
         gdf[col_name] = np.nan

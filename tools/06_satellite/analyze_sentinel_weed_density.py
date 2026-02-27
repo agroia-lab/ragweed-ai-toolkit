@@ -54,20 +54,14 @@ import sys
 import warnings
 from pathlib import Path
 
+import matplotlib
 import numpy as np
 import pandas as pd
-import geopandas as gpd
 import rasterio
-from rasterio.crs import CRS
 from rasterio.transform import rowcol as rasterio_rowcol
-from rasterio.mask import mask as rio_mask
-from shapely.geometry import mapping
 
-import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
-from matplotlib.colors import Normalize, LinearSegmentedColormap
 from scipy import stats
 
 warnings.filterwarnings("ignore")
@@ -306,7 +300,7 @@ def align_datasets(spectral, valid, s2_transform, indices, kriging, krig_meta):
     n_valid_weed = (~df[WEED_SPECIES].isnull().all(axis=1)).sum()
     print(f"  Total aligned pixels: {len(df)}")
     print(f"  Pixels with weed data: {n_valid_weed}")
-    print(f"\n  Weed density at pixel level (sampled from kriging):")
+    print("\n  Weed density at pixel level (sampled from kriging):")
     for sp in WEED_SPECIES:
         v = df[sp].dropna()
         print(f"    {sp}: {len(v)} pixels, "
@@ -351,7 +345,7 @@ def run_dimensionality_reduction(df: pd.DataFrame):
     X_pca = pca.fit_transform(X_sc)
 
     var_exp = pca.explained_variance_ratio_ * 100
-    print(f"  PCA variance explained:")
+    print("  PCA variance explained:")
     cum = 0
     for i, v in enumerate(var_exp[:6]):
         cum += v
@@ -371,7 +365,7 @@ def run_dimensionality_reduction(df: pd.DataFrame):
         df.loc[mask, "UMAP1"] = X_umap[:, 0]
         df.loc[mask, "UMAP2"] = X_umap[:, 1]
         umap_ok = True
-        print(f"  UMAP: 2D projection done")
+        print("  UMAP: 2D projection done")
     except ImportError:
         print("  UMAP not installed — skipping (pip install umap-learn)")
 
@@ -608,7 +602,8 @@ def plot_spatial_maps(df: pd.DataFrame):
     axes[0].set_title("Sentinel-2 PC1\n(firma espectral)")
     axes[0].ticklabel_format(useOffset=False, style="plain")
     axes[0].tick_params(axis="x", rotation=45)
-    axes[0].set_xlabel("UTM Este (m)"); axes[0].set_ylabel("UTM Norte (m)")
+    axes[0].set_xlabel("UTM Este (m)")
+    axes[0].set_ylabel("UTM Norte (m)")
 
     # AMBEL
     ambel_v = data["AMBEL"].fillna(0)
@@ -616,7 +611,7 @@ def plot_spatial_maps(df: pd.DataFrame):
                           edgecolors="k", linewidths=0.1,
                           vmax=np.percentile(ambel_v, 97))
     plt.colorbar(sc2, ax=axes[1], label="Densidad AMBEL (kriging)")
-    axes[1].set_title(f"AMBEL — Ambrosia artemisiifolia\n(densidad kriging)")
+    axes[1].set_title("AMBEL — Ambrosia artemisiifolia\n(densidad kriging)")
     axes[1].ticklabel_format(useOffset=False, style="plain")
     axes[1].tick_params(axis="x", rotation=45)
     axes[1].set_xlabel("UTM Este (m)")
@@ -627,7 +622,7 @@ def plot_spatial_maps(df: pd.DataFrame):
                           edgecolors="k", linewidths=0.1,
                           vmax=np.percentile(lencu_v, 97))
     plt.colorbar(sc3, ax=axes[2], label="Densidad LENCU (kriging)")
-    axes[2].set_title(f"LENCU — Convolvulus arvensis\n(densidad kriging)")
+    axes[2].set_title("LENCU — Convolvulus arvensis\n(densidad kriging)")
     axes[2].ticklabel_format(useOffset=False, style="plain")
     axes[2].tick_params(axis="x", rotation=45)
     axes[2].set_xlabel("UTM Este (m)")

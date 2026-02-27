@@ -24,7 +24,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Sequence, Union
+from typing import Any, Dict, List, Sequence, Union
 
 try:
     from ultralytics import YOLO
@@ -178,9 +178,18 @@ def main():
     )
     parser.add_argument("--model", required=True, help="Path to trained YOLO .pt checkpoint")
     parser.add_argument("--images", required=True, nargs="+", help="Image file(s) or directory")
-    parser.add_argument("--slice-size", type=int, default=640, help="Slice size in pixels (default: 640)")
-    parser.add_argument("--overlap", type=float, default=0.2, help="Overlap ratio (default: 0.2)")
-    parser.add_argument("--conf", type=float, default=0.25, help="Confidence threshold (default: 0.25)")
+    parser.add_argument(
+        "--slice-size", type=int, default=640,
+        help="Slice size in pixels (default: 640)",
+    )
+    parser.add_argument(
+        "--overlap", type=float, default=0.2,
+        help="Overlap ratio (default: 0.2)",
+    )
+    parser.add_argument(
+        "--conf", type=float, default=0.25,
+        help="Confidence threshold (default: 0.25)",
+    )
     parser.add_argument("--device", default="cuda:0", help="Device (default: cuda:0)")
     parser.add_argument("--output", default=None, help="Save results JSON to this path")
     args = parser.parse_args()
@@ -210,7 +219,10 @@ def main():
         device=args.device,
     )
 
-    print(f"SAHI inference: {len(image_paths)} images, slice={cfg.slice_size}, conf={cfg.confidence_threshold}")
+    print(
+        f"SAHI inference: {len(image_paths)} images, "
+        f"slice={cfg.slice_size}, conf={cfg.confidence_threshold}"
+    )
     results = run_sahi_batch(image_paths, cfg)
 
     total_dets = sum(len(dets) for dets in results.values())

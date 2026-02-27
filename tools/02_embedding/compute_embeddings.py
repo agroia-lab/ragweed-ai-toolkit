@@ -19,17 +19,16 @@ Usage:
     python scripts/utils/compute_embeddings.py --dataset campos_completo --compute --max-samples 500
 """
 
-import os
+import argparse
 import sys
+from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
-import argparse
-import json
-from datetime import datetime
+
 import numpy as np
 
 # ragweed_toolkit library imports
-from ragweed_toolkit.embeddings import reduce_embeddings, umap_scatter
+from ragweed_toolkit.embeddings import reduce_embeddings
 
 # TODO: Move CLIP embedding computation to ragweed_toolkit.embeddings when
 # the library supports CLIP backends alongside ResNet50. Currently only
@@ -84,10 +83,10 @@ def compute_clip_embeddings(
     Returns:
         numpy array of embeddings (N x embedding_dim)
     """
-    import torch
     import clip
-    from PIL import Image
     import pillow_heif
+    import torch
+    from PIL import Image
 
     # Register HEIC support
     pillow_heif.register_heif_opener()
@@ -251,7 +250,7 @@ def compute_umap(
     Returns:
         Low-dimensional coordinates (N x n_components)
     """
-    print(f"\nComputing UMAP projection...")
+    print("\nComputing UMAP projection...")
     print(f"  Input shape: {embeddings.shape}")
     print(f"  n_neighbors: {n_neighbors}")
     print(f"  min_dist: {min_dist}")
@@ -265,7 +264,7 @@ def compute_umap(
         umap_min_dist=min_dist,
         umap_metric=metric,
     )
-    cols = [f"umap_x", f"umap_y"]
+    cols = ["umap_x", "umap_y"]
     if n_components >= 3:
         cols.append("umap_z")
     coords = df[cols].values
@@ -294,11 +293,10 @@ def create_interactive_plot(
         color_by: Field to color points by
         title: Plot title
     """
-    import plotly.express as px
-    import plotly.graph_objects as go
     import pandas as pd
+    import plotly.express as px
 
-    print(f"\nCreating interactive visualization...")
+    print("\nCreating interactive visualization...")
 
     # Create DataFrame - include full filepath for image viewing
     df = pd.DataFrame({
@@ -510,11 +508,11 @@ def create_static_plot(
         color_by: Field to color points by
         title: Plot title
     """
-    import matplotlib.pyplot as plt
     import matplotlib
+    import matplotlib.pyplot as plt
     matplotlib.use('Agg')
 
-    print(f"\nCreating static visualization...")
+    print("\nCreating static visualization...")
 
     # Color palette
     color_map = {
@@ -607,7 +605,7 @@ def create_multi_view_visualization(
             title=f"{title_prefix} - {suffix}"
         )
 
-    print(f"\nVisualization files created:")
+    print("\nVisualization files created:")
     for f in output_dir.glob("umap_*"):
         print(f"  - {f.name}")
 
@@ -730,7 +728,7 @@ Examples:
         print(f"\n{'='*60}")
         print("VISUALIZATION COMPLETE")
         print(f"{'='*60}")
-        print(f"Open these files in your browser:")
+        print("Open these files in your browser:")
         for html_file in (output_dir).glob("*.html"):
             print(f"  file://{html_file}")
 

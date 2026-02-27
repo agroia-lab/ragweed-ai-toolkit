@@ -262,7 +262,7 @@ def main():
 
     result = deployment_gate(mmd_val)
 
-    print(f"\nResults:")
+    print("\nResults:")
     print(f"  MMD = {mmd_val:.4f}")
     print(f"  p-value = {p_value:.4f}")
     print(f"  Tier: {result.tier.upper()}")

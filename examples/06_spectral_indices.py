@@ -45,7 +45,7 @@ for i, name in enumerate(BAND_NAMES):
     lo, hi = band_ranges[name]
     spectral[i] = np.random.uniform(lo, hi, (H, W))
 
-print(f"=== Synthetic Sentinel-2 Image ===")
+print("=== Synthetic Sentinel-2 Image ===")
 print(f"  Shape : {spectral.shape} (bands, H, W)")
 print(f"  Bands : {', '.join(BAND_NAMES)}")
 
@@ -67,7 +67,7 @@ for name, arr in indices.items():
 # 3.  Compute a subset of indices
 # ------------------------------------------------------------------ #
 subset = compute_spectral_indices(spectral, indices=["NDVI", "BSI", "S2WI"])
-print(f"\n=== Subset (3 indices) ===")
+print("\n=== Subset (3 indices) ===")
 for name, arr in subset.items():
     print(f"  {name:<8} : shape={arr.shape}, mean={arr.mean():.3f}")
 
@@ -80,7 +80,7 @@ valid_mask[0:10, :] = False  # top 10 rows are "cloud"
 masked = compute_spectral_indices(spectral, valid=valid_mask, indices=["NDVI"])
 ndvi = masked["NDVI"]
 n_nan = np.isnan(ndvi).sum()
-print(f"\n=== With validity mask ===")
+print("\n=== With validity mask ===")
 print(f"  NaN pixels  : {n_nan} (masked as cloud)")
 print(f"  Valid pixels : {H * W - n_nan}")
 print(f"  NDVI mean (valid only) : {np.nanmean(ndvi):.3f}")

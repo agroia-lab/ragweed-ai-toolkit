@@ -20,13 +20,11 @@ apply_pca
     Apply PCA dimensionality reduction for visualization.
 """
 
-from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, Optional
 
 import geopandas as gpd
 import numpy as np
-import pandas as pd
 from shapely.geometry import box, mapping
 
 # Presto UInt16 scaling
@@ -72,10 +70,10 @@ def extract_presto_embeddings(
         Path to downloaded GeoTIFF, or ``None`` on failure.
     """
     try:
-        from worldcereal.job import create_embeddings_process_graph, INFERENCE_JOB_OPTIONS
-        from worldcereal.parameters import EmbeddingsParameters
         from openeo_gfmap.spatial import BoundingBoxExtent
         from openeo_gfmap.temporal import TemporalContext
+        from worldcereal.job import INFERENCE_JOB_OPTIONS, create_embeddings_process_graph
+        from worldcereal.parameters import EmbeddingsParameters
     except ImportError as e:
         raise ImportError(
             f"WorldCereal/openEO packages required: {e}\n"

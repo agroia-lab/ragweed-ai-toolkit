@@ -21,10 +21,10 @@ from pathlib import Path
 from typing import Dict, List, Optional
 
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
-
 
 # Metric keys and display info
 METRICS_KEYS = ["mAP50", "mAP50-95", "precision", "recall"]

@@ -23,7 +23,11 @@ Usage::
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Dict, List, Optional, Sequence, Union
+from typing import TYPE_CHECKING, Dict, List, Optional, Sequence, Union
+
+if TYPE_CHECKING:
+    import matplotlib.figure
+    import plotly.graph_objects
 
 import numpy as np
 import pandas as pd
@@ -253,8 +257,8 @@ def mmd_bar_chart(
     """
     import matplotlib
     matplotlib.use("Agg")
-    import matplotlib.pyplot as plt
     import matplotlib.patches as mpatches
+    import matplotlib.pyplot as plt
 
     if chilean_dbs is None:
         chilean_dbs = set()
@@ -266,7 +270,7 @@ def mmd_bar_chart(
     colors = ["#2171b5" if n in chilean_dbs else "#e6550d" for n in names]
 
     fig, ax = plt.subplots(figsize=figsize)
-    bars = ax.barh(names, values, color=colors, edgecolor="white", linewidth=0.5, height=0.6)
+    ax.barh(names, values, color=colors, edgecolor="white", linewidth=0.5, height=0.6)
 
     # Annotate bars
     for i, val in enumerate(values):

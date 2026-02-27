@@ -57,9 +57,15 @@ import pandas as pd
 
 from ragweed_toolkit.embeddings import (
     compute_mmd as _lib_compute_mmd,
-    permutation_test as _lib_permutation_test,
+)
+from ragweed_toolkit.embeddings import (
     deployment_gate,
+)
+from ragweed_toolkit.embeddings import (
     mmd_bar_chart as _lib_mmd_bar_chart,
+)
+from ragweed_toolkit.embeddings import (
+    permutation_test as _lib_permutation_test,
 )
 
 warnings.filterwarnings("ignore")
@@ -662,7 +668,7 @@ Examples:
     print_section("[5/7] COMPUTING PER-TILE DISTANCES")
 
     tile_distances = compute_tile_distances(tile_normed, ref_normed)
-    print(f"  Distance statistics:")
+    print("  Distance statistics:")
     print(f"    Min:    {tile_distances.min():.4f}")
     print(f"    Median: {np.median(tile_distances):.4f}")
     print(f"    Mean:   {tile_distances.mean():.4f}")

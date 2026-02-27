@@ -23,17 +23,17 @@ Author: INIA Deep Learning Project
 Dependencies: pygeoda, geopandas, rasterio
 """
 
-import sys
+from datetime import datetime
 from pathlib import Path
+
+import geopandas as gpd
 import numpy as np
 import pandas as pd
-import geopandas as gpd
+import pygeoda
 import rasterio
 from rasterio.errors import RasterioIOError
-import pygeoda
-from datetime import datetime
 
-from ragweed_toolkit.spatial import LISA_COLORS, QUADRANT_MAP, lisa_summary
+from ragweed_toolkit.spatial import LISA_COLORS
 
 # Mapping from pygeoda cluster codes to ragweed_toolkit LISA keys
 _PYGEODA_TO_LISA_KEY = {0: "NS", 1: "HH", 2: "LL", 3: "LH", 4: "HL"}

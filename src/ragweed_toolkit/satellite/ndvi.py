@@ -22,15 +22,11 @@ create_risk_zones
     Classify pixels into orobanche risk zones.
 """
 
-from pathlib import Path
-from typing import Dict, List, Optional
 
 import ee
 import geopandas as gpd
 import numpy as np
-import pandas as pd
 from shapely.geometry import box
-
 
 # Crop season windows (Oct 1 - Mar 31)
 CROP_SEASON_WINDOWS = {
@@ -120,11 +116,20 @@ def compute_ndvi_statistics(
     ndvi_min = processed.select("NDVI").reduce(ee.Reducer.min()).toFloat().rename("ndvi_min")
     ndvi_max = processed.select("NDVI").reduce(ee.Reducer.max()).toFloat().rename("ndvi_max")
     ndvi_mean = processed.select("NDVI").reduce(ee.Reducer.mean()).toFloat().rename("ndvi_mean")
-    ndvi_median = processed.select("NDVI").reduce(ee.Reducer.median()).toFloat().rename("ndvi_median")
+    ndvi_median = (
+        processed.select("NDVI").reduce(ee.Reducer.median())
+        .toFloat().rename("ndvi_median")
+    )
     ndvi_std = processed.select("NDVI").reduce(ee.Reducer.stdDev()).toFloat().rename("ndvi_std")
     ndvi_count = processed.select("NDVI").reduce(ee.Reducer.count()).toFloat().rename("ndvi_count")
-    ndvi_p10 = processed.select("NDVI").reduce(ee.Reducer.percentile([10])).toFloat().rename("ndvi_p10")
-    ndvi_p90 = processed.select("NDVI").reduce(ee.Reducer.percentile([90])).toFloat().rename("ndvi_p90")
+    ndvi_p10 = (
+        processed.select("NDVI").reduce(ee.Reducer.percentile([10]))
+        .toFloat().rename("ndvi_p10")
+    )
+    ndvi_p90 = (
+        processed.select("NDVI").reduce(ee.Reducer.percentile([90]))
+        .toFloat().rename("ndvi_p90")
+    )
 
     ndvi_range = ndvi_max.subtract(ndvi_min).toFloat().rename("ndvi_range")
     ndvi_cv = ndvi_std.divide(ndvi_mean).toFloat().rename("ndvi_cv")
@@ -246,7 +251,10 @@ def export_ndvi_stats(
     result = stats.addBands(slope).addBands(date_max)
 
     safe_name = paddock_name.replace(" ", "_").replace(",", "")
-    filename = f"ndvi_stats_{season_label}_{safe_name}" if season_label else f"ndvi_stats_{safe_name}"
+    if season_label:
+        filename = f"ndvi_stats_{season_label}_{safe_name}"
+    else:
+        filename = f"ndvi_stats_{safe_name}"
 
     task = ee.batch.Export.image.toDrive(
         image=result,

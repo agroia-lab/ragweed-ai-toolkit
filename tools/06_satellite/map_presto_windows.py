@@ -21,21 +21,20 @@ Usage:
     /home/malezainia1/anaconda3/envs/yolov8_custom/bin/python scripts/satellite/map_presto_windows.py
 """
 
-import os
-import sys
 import shutil
+import sys
 import warnings
 from pathlib import Path
 
 import matplotlib
+
 matplotlib.use('Agg')
 
-import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
-from matplotlib.collections import PatchCollection
-from matplotlib.colors import ListedColormap, Normalize
-import numpy as np
 import geopandas as gpd
+import matplotlib.patches as mpatches
+import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib.collections import PatchCollection
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 
@@ -497,8 +496,8 @@ def figure_1_pca_rgb_all(all_data, boundaries, output_dir):
         )
 
         # Window title as text
-        row = win_idx // 2
-        col = win_idx % 2
+        win_idx // 2
+        win_idx % 2
         title_y = outer_gs[win_idx].get_position(fig).y1 + 0.01
         title_x = (outer_gs[win_idx].get_position(fig).x0 +
                     outer_gs[win_idx].get_position(fig).x1) / 2

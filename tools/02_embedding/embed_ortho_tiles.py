@@ -45,16 +45,15 @@ from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
-from PIL import Image
-
 import torch
-from torch.utils.data import Dataset, DataLoader
+from PIL import Image
+from torch.utils.data import Dataset
 from torchvision import transforms
 
 from ragweed_toolkit.embeddings import (
     FeatureExtractor,
-    extract_embeddings,
     default_transform,
+    extract_embeddings,
     reduce_embeddings,
 )
 
@@ -573,7 +572,7 @@ def main():
     print(f"  Total tiles: {len(df)}")
     if has_rowcol.any():
         print(f"  Grid size: {n_rows} rows x {n_cols} cols")
-        print(f"  Grid zones:")
+        print("  Grid zones:")
         for zone, count in df["grid_zone"].value_counts().sort_index().items():
             print(f"    {zone}: {count}")
     print()

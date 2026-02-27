@@ -19,13 +19,12 @@ Output:
     └── ...
 """
 
-import ee
-import geopandas as gpd
 import argparse
-import os
 import sys
 from pathlib import Path
-import time
+
+import ee
+import geopandas as gpd
 
 # Project paths - use portable path resolution
 _script_dir = Path(__file__).resolve().parent
@@ -35,13 +34,19 @@ sys.path.insert(0, str(_project_root / "src"))
 
 from scripts.utils.paths import get_paths
 
+from ragweed_toolkit.satellite.composites import (
+    SEASON_WINDOWS,
+)
+from ragweed_toolkit.satellite.composites import (
+    export_ndvi_max as _lib_export_ndvi_max,
+)
+from ragweed_toolkit.satellite.composites import (
+    export_rgb_median as _lib_export_rgb_median,
+)
+
 # --- Library imports (replacing internal duplicates) ---
 from ragweed_toolkit.satellite.composites import (
     get_sentinel2_collection as _lib_get_collection,
-    compute_ndvi,
-    export_ndvi_max as _lib_export_ndvi_max,
-    export_rgb_median as _lib_export_rgb_median,
-    SEASON_WINDOWS,
 )
 
 # Earth Engine project
@@ -51,7 +56,7 @@ EE_PROJECT = "gen-lang-client-0195046178"
 try:
     ee.Initialize(project=EE_PROJECT)
     print(f"Earth Engine initialized (project: {EE_PROJECT})")
-except:
+except Exception:
     print("Authenticating Earth Engine...")
     ee.Authenticate()
     ee.Initialize(project=EE_PROJECT)
@@ -67,7 +72,7 @@ BOUNDARIES_FILE = f"{BASE_PATH}/paddock_boundaries.gpkg"
 
 def get_paddock_geometry(paddock_name, boundaries_file):
     """Load paddock geometry from GeoPackage."""
-    from shapely.geometry import MultiPolygon, Polygon
+    from shapely.geometry import MultiPolygon
     from shapely.ops import unary_union
 
     gdf = gpd.read_file(boundaries_file)
@@ -113,7 +118,7 @@ def get_paddock_geometry(paddock_name, boundaries_file):
             [bounds[0], bounds[1]]
         ]
         ee_geom = ee.Geometry.Polygon([bbox_coords])
-        print(f"  Using bounding box instead")
+        print("  Using bounding box instead")
         return ee_geom
 
 
@@ -131,7 +136,7 @@ def export_ndvi_max(geometry, start_date, end_date, output_path, paddock_name):
     print(f"    Found {count} Sentinel-2 images")
 
     if count == 0:
-        print(f"    WARNING: No images found!")
+        print("    WARNING: No images found!")
         return None
 
     task = _lib_export_ndvi_max(geometry, start_date, end_date, paddock_name)
@@ -148,7 +153,7 @@ def export_rgb_median(geometry, start_date, end_date, output_path, paddock_name)
     count = collection.size().getInfo()
 
     if count == 0:
-        print(f"    WARNING: No images found!")
+        print("    WARNING: No images found!")
         return None
 
     task = _lib_export_rgb_median(geometry, start_date, end_date, paddock_name)
@@ -193,7 +198,7 @@ def main():
     # Get date window
     start_date, end_date = SEASON_WINDOWS[args.season]
     print(f"\n{'='*60}")
-    print(f"SATELLITE COMPOSITES EXPORT")
+    print("SATELLITE COMPOSITES EXPORT")
     print(f"{'='*60}")
     print(f"Season: {args.season}")
     print(f"Period: {start_date} to {end_date}")
@@ -237,7 +242,7 @@ def main():
                 tasks.append(task)
 
     print(f"\n{'='*60}")
-    print(f"EXPORT TASKS SUBMITTED")
+    print("EXPORT TASKS SUBMITTED")
     print(f"{'='*60}")
     print(f"Total tasks: {len(tasks)}")
     print()

@@ -19,15 +19,14 @@ Usage::
 from __future__ import annotations
 
 from pathlib import Path
-from typing import List, Optional, Sequence, Tuple, Union
+from typing import Optional, Sequence, Tuple, Union
 
-import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
+import numpy as np
 from matplotlib.patches import Rectangle
 
 from .style import DPI, FONT_SIZE, PANEL_LABEL_SIZE, set_publication_style
-
 
 # Type alias for bounding boxes: list of (x_min, y_min, x_max, y_max[, label])
 BBoxList = Sequence[Union[Tuple[float, float, float, float],

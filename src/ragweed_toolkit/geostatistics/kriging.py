@@ -18,16 +18,18 @@ Chapter reference: Section 5.4.2 (Kriging interpolation).
 
 from __future__ import annotations
 
-from typing import Optional, Union
+from typing import Optional
 
-import numpy as np
 import geopandas as gpd
+import numpy as np
 from shapely.geometry import box
 
 from .variograms import VariogramModel
 
 
-def _exponential_covariance(h: np.ndarray, nugget: float, partial_sill: float, range_param: float) -> np.ndarray:
+def _exponential_covariance(
+    h: np.ndarray, nugget: float, partial_sill: float, range_param: float,
+) -> np.ndarray:
     """Covariance function C(h) = sill - gamma(h) for nugget model."""
     sill = nugget + partial_sill
     gamma = nugget + partial_sill * (1 - np.exp(-h / range_param))
@@ -203,15 +205,39 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(
-        description="Interpolate point observations using ordinary kriging with exponential variogram."
+        description=(
+            "Interpolate point observations using ordinary kriging"
+            " with exponential variogram."
+        ),
     )
-    parser.add_argument("--points", required=True, help="GeoPackage/Shapefile with point observations")
-    parser.add_argument("--value-col", required=True, help="Column name to interpolate")
-    parser.add_argument("--boundary", required=True, help="GeoPackage/Shapefile with study area polygon")
-    parser.add_argument("--output", required=True, help="Output GeoPackage path for kriging grid")
-    parser.add_argument("--resolution", type=float, default=5.0, help="Grid cell size in metres (default: 5)")
-    parser.add_argument("--nugget", type=float, default=43066.5, help="Variogram nugget (default: 43066.5)")
-    parser.add_argument("--partial-sill", type=float, default=43066.5, help="Variogram partial sill (default: 43066.5)")
+    parser.add_argument(
+        "--points", required=True,
+        help="GeoPackage/Shapefile with point observations",
+    )
+    parser.add_argument(
+        "--value-col", required=True,
+        help="Column name to interpolate",
+    )
+    parser.add_argument(
+        "--boundary", required=True,
+        help="GeoPackage/Shapefile with study area polygon",
+    )
+    parser.add_argument(
+        "--output", required=True,
+        help="Output GeoPackage path for kriging grid",
+    )
+    parser.add_argument(
+        "--resolution", type=float, default=5.0,
+        help="Grid cell size in metres (default: 5)",
+    )
+    parser.add_argument(
+        "--nugget", type=float, default=43066.5,
+        help="Variogram nugget (default: 43066.5)",
+    )
+    parser.add_argument(
+        "--partial-sill", type=float, default=43066.5,
+        help="Variogram partial sill (default: 43066.5)",
+    )
     parser.add_argument("--range", type=float, default=81.2, dest="range_param",
                         help="Variogram range in metres (default: 81.2)")
     args = parser.parse_args()
@@ -221,7 +247,10 @@ def main():
 
     print(f"Points: {len(gdf)} observations, column={args.value_col}")
     print(f"Boundary: {len(boundary)} polygon(s)")
-    print(f"Variogram: nugget={args.nugget}, partial_sill={args.partial_sill}, range={args.range_param}m")
+    print(
+        f"Variogram: nugget={args.nugget}, "
+        f"partial_sill={args.partial_sill}, range={args.range_param}m"
+    )
     print(f"Grid resolution: {args.resolution}m")
 
     result = ordinary_kriging(
@@ -239,7 +268,7 @@ def main():
     out_path.parent.mkdir(parents=True, exist_ok=True)
     result.to_file(str(out_path), driver="GPKG")
 
-    print(f"\nKriging complete:")
+    print("\nKriging complete:")
     print(f"  Grid cells: {len(result)}")
     print(f"  Predicted range: {result['predicted'].min():.1f} - {result['predicted'].max():.1f}")
     print(f"  Output: {out_path}")

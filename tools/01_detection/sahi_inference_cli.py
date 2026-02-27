@@ -8,31 +8,26 @@ Usage:
 """
 
 import argparse
-import os
-import sys
 import json
 import time
+from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
-from typing import List, Dict, Tuple, Optional
-from collections import defaultdict
+from typing import Dict, List
 
 import cv2
-import numpy as np
-from PIL import Image, ImageDraw, ImageFont
 import matplotlib
+import numpy as np
+from PIL import Image
+
 matplotlib.use('Agg')  # Non-interactive backend for saving
 import matplotlib.pyplot as plt
-from matplotlib.patches import Rectangle
 import torch
-
-from ultralytics import YOLO
 from sahi import AutoDetectionModel
-from sahi.predict import get_sliced_prediction
+from ultralytics import YOLO
 
 # ragweed_toolkit library imports
 from ragweed_toolkit.detection import SahiConfig, run_sahi
-
 
 # Default class colors (RGB) - extended palette for any number of classes
 DEFAULT_COLORS = [
@@ -405,7 +400,7 @@ def process_dataset(args):
         if args.panels:
             image = cv2.imread(str(image_path))
             if image is None:
-                print(f"  ⚠️ Could not load image, skipping")
+                print("  ⚠️ Could not load image, skipping")
                 continue
             h, w = image.shape[:2]
         else:
@@ -439,7 +434,7 @@ def process_dataset(args):
         # Run direct inference for comparison (only in comparison mode)
         direct_detections = []
         if (not inference_mode) and args.direct and (direct_model is not None):
-            print(f"  🔍 Running direct inference...")
+            print("  🔍 Running direct inference...")
             t0 = time.perf_counter()
             direct_detections = run_direct_inference(direct_model, image_path, args.slice, args.conf)
             t1 = time.perf_counter()

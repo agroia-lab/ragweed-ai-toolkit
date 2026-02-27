@@ -23,7 +23,7 @@ Reference parameters from chapter (Table 6):
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Optional, Sequence
+from typing import Optional
 
 import numpy as np
 from scipy.optimize import curve_fit
@@ -93,7 +93,7 @@ def compute_experimental_variogram(
     gamma = np.full(n_lags, np.nan)
     counts = np.zeros(n_lags, dtype=int)
 
-    n = len(values)
+    len(values)
     for k in range(n_lags):
         lo, hi = lag_edges[k], lag_edges[k + 1]
         mask = np.triu((dist_matrix > lo) & (dist_matrix <= hi), k=1)
@@ -234,7 +234,10 @@ def plot_variogram(
         ),
     )
 
-    ax.axhline(model.sill, color="gray", linestyle="--", linewidth=0.8, label=f"Sill = {model.sill:.0f}")
+    ax.axhline(
+        model.sill, color="gray", linestyle="--", linewidth=0.8,
+        label=f"Sill = {model.sill:.0f}",
+    )
     ax.set_xlabel("Lag distance (m)", fontsize=11)
     ax.set_ylabel("Semivariance", fontsize=11)
     ax.set_title(title, fontsize=13, fontweight="bold")

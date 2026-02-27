@@ -22,16 +22,16 @@ from .cross_variograms import (
 
 # morans and lisa require esda, libpysal, geopandas
 try:
-    from .morans import (
-        BivariateMoranResult,
-        build_distance_weights,
-        compute_bivariate_morans,
-    )
     from .lisa import (
         LISA_COLORS,
         QUADRANT_MAP,
         compute_bivariate_lisa,
         lisa_summary,
+    )
+    from .morans import (
+        BivariateMoranResult,
+        build_distance_weights,
+        compute_bivariate_morans,
     )
 except ImportError:
     BivariateMoranResult = None  # type: ignore[assignment,misc]
@@ -45,12 +45,12 @@ except ImportError:
 # gwr requires mgwr, spreg (optional heavy dependencies)
 try:
     from .gwr import (
-        OLSResult,
         GWRResult,
         ModelComparison,
-        fit_ols,
-        fit_gwr,
+        OLSResult,
         compare_ols_gwr,
+        fit_gwr,
+        fit_ols,
     )
 except ImportError:
     OLSResult = None  # type: ignore[assignment,misc]

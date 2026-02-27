@@ -19,7 +19,7 @@ separate Claude Code window.
 | 2 | Viz module + unit tests + examples + CLAUDE.md | S1 | DONE |
 | 3 | Refactor tools/ to import from package | S2 | DONE |
 | 4 | CLI entry points + notebook tutorials | S3 | DONE |
-| 5 | GitHub setup + CI/CD + docs site | S4 | PENDING |
+| 5 | GitHub setup + CI/CD + docs site | S4 | DONE |
 | 6 | Integration testing with real data | S5 | PENDING |
 
 ---

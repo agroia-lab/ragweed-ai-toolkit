@@ -27,9 +27,9 @@ __all__ = [
 ]
 
 try:
-    from ragweed_toolkit.detection.trainer import TrainingConfig, train
-    from ragweed_toolkit.detection.inference import SahiConfig, run_sahi, run_sahi_batch
     from ragweed_toolkit.detection.evaluation import evaluate
+    from ragweed_toolkit.detection.inference import SahiConfig, run_sahi, run_sahi_batch
+    from ragweed_toolkit.detection.trainer import TrainingConfig, train
 except ImportError:
     pass
 

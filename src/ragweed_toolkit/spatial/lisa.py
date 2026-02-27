@@ -20,7 +20,6 @@ from __future__ import annotations
 
 from typing import Optional
 
-import numpy as np
 import geopandas as gpd
 from esda.moran import Moran_Local_BV
 from libpysal.weights import DistanceBand
@@ -140,7 +139,10 @@ def main():
     parser = argparse.ArgumentParser(
         description="Compute bivariate LISA clusters from a spatial dataset."
     )
-    parser.add_argument("--input", required=True, help="GeoPackage/Shapefile with point observations")
+    parser.add_argument(
+        "--input", required=True,
+        help="GeoPackage/Shapefile with point observations",
+    )
     parser.add_argument("--var-x", required=True, help="Column name for first variable")
     parser.add_argument("--var-y", required=True, help="Column name for second variable")
     parser.add_argument("--output", default=None, help="Output GeoPackage path (optional)")
@@ -167,7 +169,7 @@ def main():
     )
 
     summary = lisa_summary(result)
-    print(f"\nLISA Cluster Summary:")
+    print("\nLISA Cluster Summary:")
     for cat in ["HH", "HL", "LH", "LL", "NS"]:
         info = summary[cat]
         print(f"  {cat}: {info['count']} ({info['pct']}%)")

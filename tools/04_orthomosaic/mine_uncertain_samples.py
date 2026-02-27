@@ -36,13 +36,11 @@ Usage:
 
 import argparse
 import json
-import sys
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, Optional, Tuple
 
-import numpy as np
 import pandas as pd
 import yaml
 
@@ -52,7 +50,6 @@ from ragweed_toolkit.orthomosaic import (
     generate_uncertainty_report,
     score_images,
 )
-
 
 # ============================================================================
 # Configuration
@@ -153,7 +150,6 @@ def run_inference_and_collect(
 ) -> Tuple[Dict, Dict]:
     """Run SAHI inference on images and return per-detection data."""
     from PIL import Image as PILImage
-
     from sahi import AutoDetectionModel
     from sahi.predict import get_sliced_prediction
 
@@ -536,7 +532,7 @@ Examples:
         print("\nSkipping YOLO export: cannot locate original images (use --images-dir)")
 
     # Generate report using library
-    report = generate_uncertainty_report(
+    generate_uncertainty_report(
         ranking=ranking,
         top_n=top_n,
         output_dir=str(output_dir),
@@ -560,7 +556,7 @@ Examples:
     print(f"Top-{top_n} exported to:    {output_dir}")
     print(f"Score range:            {ranking['composite_score'].min():.4f} - {ranking['composite_score'].max():.4f}")
     print(f"Total time:             {total_time:.1f}s")
-    print(f"\nOutputs:")
+    print("\nOutputs:")
     print(f"  {csv_path}")
     if args.panels and images_dir:
         print(f"  {output_dir / 'uncertain_panels/'}")

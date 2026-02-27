@@ -40,9 +40,9 @@ distances_to_hotspot = np.sqrt(
 counts = np.maximum(0, 50 * np.exp(-distances_to_hotspot / 60) +
                     np.random.randn(n_points) * 10)
 
-print(f"=== Synthetic Data ===")
+print("=== Synthetic Data ===")
 print(f"  Points          : {n_points}")
-print(f"  Field size      : 200m x 200m")
+print("  Field size      : 200m x 200m")
 print(f"  Count range     : {counts.min():.0f} - {counts.max():.0f}")
 print(f"  Count mean      : {counts.mean():.1f}")
 
@@ -55,7 +55,7 @@ lag_centers, gamma, pair_counts = compute_experimental_variogram(
     max_lag=120.0,  # analyse up to 120m
 )
 
-print(f"\n=== Experimental Variogram ===")
+print("\n=== Experimental Variogram ===")
 print(f"  {'Lag (m)':>10} {'Semivariance':>14} {'Pairs':>8}")
 print(f"  {'-'*10} {'-'*14} {'-'*8}")
 for lag, g, c in zip(lag_centers, gamma, pair_counts):
@@ -67,7 +67,7 @@ for lag, g, c in zip(lag_centers, gamma, pair_counts):
 # ------------------------------------------------------------------ #
 model = fit_exponential_model(lag_centers, gamma)
 
-print(f"\n=== Fitted Exponential Model ===")
+print("\n=== Fitted Exponential Model ===")
 print(f"  Nugget (C0)     : {model.nugget:.1f}")
 print(f"  Partial sill (C): {model.partial_sill:.1f}")
 print(f"  Sill (C0+C)     : {model.sill:.1f}")
@@ -83,7 +83,7 @@ print(f"\n  gamma({test_distance:.0f}m) = {predicted_gamma:.1f}")
 # ------------------------------------------------------------------ #
 # 5.  Kriging usage (requires GeoDataFrame + boundary polygon)
 # ------------------------------------------------------------------ #
-print(f"\n=== Kriging Usage (not run here) ===")
+print("\n=== Kriging Usage (not run here) ===")
 print("""
   import geopandas as gpd
   from ragweed_toolkit.geostatistics import ordinary_kriging
