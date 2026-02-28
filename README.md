@@ -10,9 +10,9 @@
 
 Companion software to the Springer Nature book chapter:
 
-> **AI-Driven Spatial Decision-Support for Sustainable Weed Management under Climate Variability**
+> **From Plant Detection to Satellite Mapping: A Multi-Scale AI Toolkit for Ragweed Surveillance under Climate Change**
 >
-> Lorenzo F. Leon et al.
+> Lorenzo Leon et al.
 >
 > In: *Smart-Agriculture and Technology-Innovation: Facing the Dynamic of Climate Change*
 > (Springer Nature, 2026)
