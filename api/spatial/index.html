@@ -1,0 +1,3725 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Multi-scale AI toolkit for weed detection, mapping, and spatial analysis">
+      
+      
+      
+        <link rel="canonical" href="https://agroia-lab.github.io/ragweed-ai-toolkit/api/spatial/">
+      
+      
+        <link rel="prev" href="../geostatistics/">
+      
+      
+        <link rel="next" href="../satellite/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.3">
+    
+    
+      
+        <title>spatial - Ragweed AI Toolkit</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#spatial" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Ragweed AI Toolkit" class="md-header__button md-logo" aria-label="Ragweed AI Toolkit" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Ragweed AI Toolkit
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              spatial
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="amber"  aria-hidden="true"  type="radio" name="__palette" id="__palette_0">
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/agroia-lab/ragweed-ai-toolkit" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    agroia-lab/ragweed-ai-toolkit
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../installation/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Installation
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../cli/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  CLI Reference
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../tutorials/detection/" class="md-tabs__link">
+          
+  
+  
+  Tutorials
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../detection/" class="md-tabs__link">
+          
+  
+  
+  API Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../chapter/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Chapter Results
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../contributing/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Contributing
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../changelog/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Changelog
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Ragweed AI Toolkit" class="md-nav__button md-logo" aria-label="Ragweed AI Toolkit" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Ragweed AI Toolkit
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/agroia-lab/ragweed-ai-toolkit" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    agroia-lab/ragweed-ai-toolkit
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tutorials
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Tutorials
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorials/detection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Detection Workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorials/crossdomain/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cross-Domain Analysis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorials/spatial/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Spatial Mapping
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorials/satellite/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Satellite Integration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../detection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    detection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../embeddings/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    embeddings
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../crossdomain/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    crossdomain
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../orthomosaic/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    orthomosaic
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../geostatistics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    geostatistics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    spatial
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    spatial
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#ragweed_toolkit.spatial" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        spatial
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="spatial">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ragweed_toolkit.spatial--spatial-statistics-module" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Spatial Statistics Module
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ragweed_toolkit.spatial.BivariateMoranResult" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        BivariateMoranResult
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ragweed_toolkit.spatial.CrossVariogramResult" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CrossVariogramResult
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ragweed_toolkit.spatial.GWRResult" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GWRResult
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ragweed_toolkit.spatial.ModelComparison" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ModelComparison
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ragweed_toolkit.spatial.OLSResult" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OLSResult
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ragweed_toolkit.spatial.build_distance_weights" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        build_distance_weights
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="build_distance_weights">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ragweed_toolkit.spatial.build_distance_weights--parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ragweed_toolkit.spatial.build_distance_weights--returns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Returns
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ragweed_toolkit.spatial.compare_ols_gwr" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        compare_ols_gwr
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="compare_ols_gwr">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ragweed_toolkit.spatial.compare_ols_gwr--parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ragweed_toolkit.spatial.compare_ols_gwr--returns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Returns
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ragweed_toolkit.spatial.compute_bivariate_lisa" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        compute_bivariate_lisa
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="compute_bivariate_lisa">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ragweed_toolkit.spatial.compute_bivariate_lisa--parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ragweed_toolkit.spatial.compute_bivariate_lisa--returns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Returns
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ragweed_toolkit.spatial.compute_bivariate_morans" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        compute_bivariate_morans
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="compute_bivariate_morans">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ragweed_toolkit.spatial.compute_bivariate_morans--parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ragweed_toolkit.spatial.compute_bivariate_morans--returns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Returns
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ragweed_toolkit.spatial.compute_cross_variogram" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        compute_cross_variogram
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="compute_cross_variogram">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ragweed_toolkit.spatial.compute_cross_variogram--parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ragweed_toolkit.spatial.compute_cross_variogram--returns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Returns
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ragweed_toolkit.spatial.fit_cross_variogram_model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fit_cross_variogram_model
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="fit_cross_variogram_model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ragweed_toolkit.spatial.fit_cross_variogram_model--returns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Returns
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ragweed_toolkit.spatial.fit_gwr" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fit_gwr
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="fit_gwr">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ragweed_toolkit.spatial.fit_gwr--parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ragweed_toolkit.spatial.fit_gwr--returns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Returns
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ragweed_toolkit.spatial.fit_ols" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fit_ols
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="fit_ols">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ragweed_toolkit.spatial.fit_ols--parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ragweed_toolkit.spatial.fit_ols--returns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Returns
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ragweed_toolkit.spatial.lisa_summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        lisa_summary
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="lisa_summary">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ragweed_toolkit.spatial.lisa_summary--parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ragweed_toolkit.spatial.lisa_summary--returns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Returns
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../satellite/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    satellite
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../viz/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    viz
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Chapter Results
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#ragweed_toolkit.spatial" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        spatial
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="spatial">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ragweed_toolkit.spatial--spatial-statistics-module" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Spatial Statistics Module
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ragweed_toolkit.spatial.BivariateMoranResult" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        BivariateMoranResult
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ragweed_toolkit.spatial.CrossVariogramResult" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CrossVariogramResult
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ragweed_toolkit.spatial.GWRResult" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GWRResult
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ragweed_toolkit.spatial.ModelComparison" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ModelComparison
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ragweed_toolkit.spatial.OLSResult" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OLSResult
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ragweed_toolkit.spatial.build_distance_weights" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        build_distance_weights
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="build_distance_weights">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ragweed_toolkit.spatial.build_distance_weights--parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ragweed_toolkit.spatial.build_distance_weights--returns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Returns
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ragweed_toolkit.spatial.compare_ols_gwr" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        compare_ols_gwr
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="compare_ols_gwr">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ragweed_toolkit.spatial.compare_ols_gwr--parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ragweed_toolkit.spatial.compare_ols_gwr--returns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Returns
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ragweed_toolkit.spatial.compute_bivariate_lisa" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        compute_bivariate_lisa
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="compute_bivariate_lisa">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ragweed_toolkit.spatial.compute_bivariate_lisa--parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ragweed_toolkit.spatial.compute_bivariate_lisa--returns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Returns
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ragweed_toolkit.spatial.compute_bivariate_morans" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        compute_bivariate_morans
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="compute_bivariate_morans">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ragweed_toolkit.spatial.compute_bivariate_morans--parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ragweed_toolkit.spatial.compute_bivariate_morans--returns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Returns
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ragweed_toolkit.spatial.compute_cross_variogram" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        compute_cross_variogram
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="compute_cross_variogram">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ragweed_toolkit.spatial.compute_cross_variogram--parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ragweed_toolkit.spatial.compute_cross_variogram--returns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Returns
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ragweed_toolkit.spatial.fit_cross_variogram_model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fit_cross_variogram_model
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="fit_cross_variogram_model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ragweed_toolkit.spatial.fit_cross_variogram_model--returns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Returns
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ragweed_toolkit.spatial.fit_gwr" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fit_gwr
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="fit_gwr">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ragweed_toolkit.spatial.fit_gwr--parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ragweed_toolkit.spatial.fit_gwr--returns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Returns
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ragweed_toolkit.spatial.fit_ols" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fit_ols
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="fit_ols">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ragweed_toolkit.spatial.fit_ols--parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ragweed_toolkit.spatial.fit_ols--returns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Returns
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ragweed_toolkit.spatial.lisa_summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        lisa_summary
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="lisa_summary">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ragweed_toolkit.spatial.lisa_summary--parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ragweed_toolkit.spatial.lisa_summary--returns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Returns
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="spatial">spatial</h1>
+<p>Bivariate Moran's I, LISA cluster analysis, OLS/GWR regression, and cross-variograms.</p>
+<p>This module implements Act III spatial statistics: identifying statistically significant hot spots, cold spots, and spatial outliers where satellite indices and weed density co-occur, and modelling spatially varying relationships with GWR.</p>
+
+
+<div class="doc doc-object doc-module">
+
+
+
+<h2 id="ragweed_toolkit.spatial" class="doc doc-heading">
+            <code>ragweed_toolkit.spatial</code>
+
+
+</h2>
+
+    <div class="doc doc-contents first">
+
+        <h3 id="ragweed_toolkit.spatial--spatial-statistics-module">Spatial Statistics Module</h3>
+<p>Spatial autocorrelation analysis for identifying weed hot spots and evaluating
+satellite-weed density relationships. Implements bivariate Moran's I, LISA
+cluster decomposition, and Geographically Weighted Regression (GWR).</p>
+
+
+<details class="key-components" open>
+  <summary>Key components</summary>
+  <ul>
+<li>morans: Global and bivariate Moran's I with permutation testing</li>
+<li>lisa: Local Indicators of Spatial Association (HH/LL/HL/LH clusters)</li>
+<li>gwr: Geographically Weighted Regression with adaptive bandwidth</li>
+<li>cross_variograms: Cross-variogram computation and model fitting</li>
+</ul>
+</details>
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="ragweed_toolkit.spatial.BivariateMoranResult" class="doc doc-heading">
+            <code>BivariateMoranResult</code>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Result container for bivariate global Moran's I.</p>
+
+
+
+
+
+
+
+
+              <details class="mkdocstrings-source">
+                <summary>Source code in <code>src/ragweed_toolkit/spatial/morans.py</code></summary>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span>
+<span class="normal">34</span>
+<span class="normal">35</span>
+<span class="normal">36</span>
+<span class="normal">37</span>
+<span class="normal">38</span>
+<span class="normal">39</span>
+<span class="normal">40</span>
+<span class="normal">41</span>
+<span class="normal">42</span>
+<span class="normal">43</span>
+<span class="normal">44</span>
+<span class="normal">45</span>
+<span class="normal">46</span>
+<span class="normal">47</span>
+<span class="normal">48</span>
+<span class="normal">49</span>
+<span class="normal">50</span>
+<span class="normal">51</span>
+<span class="normal">52</span>
+<span class="normal">53</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">BivariateMoranResult</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Result container for bivariate global Moran&#39;s I.&quot;&quot;&quot;</span>
+
+    <span class="n">I</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">p_value</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">z_score</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">permutations</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">var_x</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">var_y</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">n</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">threshold</span><span class="p">:</span> <span class="nb">float</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">significant</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">p_value</span> <span class="o">&lt;</span> <span class="mf">0.05</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">significance_stars</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">p_value</span> <span class="o">&lt;=</span> <span class="mf">0.001</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;***&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">p_value</span> <span class="o">&lt;</span> <span class="mf">0.01</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;**&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">p_value</span> <span class="o">&lt;</span> <span class="mf">0.05</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;*&quot;</span>
+        <span class="k">return</span> <span class="s2">&quot;ns&quot;</span>
+</code></pre></div></td></tr></table></div>
+              </details>
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="ragweed_toolkit.spatial.CrossVariogramResult" class="doc doc-heading">
+            <code>CrossVariogramResult</code>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Container for cross-variogram output.</p>
+
+
+
+
+
+
+
+
+              <details class="mkdocstrings-source">
+                <summary>Source code in <code>src/ragweed_toolkit/spatial/cross_variograms.py</code></summary>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span>
+<span class="normal">34</span>
+<span class="normal">35</span>
+<span class="normal">36</span>
+<span class="normal">37</span>
+<span class="normal">38</span>
+<span class="normal">39</span>
+<span class="normal">40</span>
+<span class="normal">41</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">CrossVariogramResult</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Container for cross-variogram output.&quot;&quot;&quot;</span>
+
+    <span class="n">lag_centers</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">gamma</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">pair_counts</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">var1_name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">var2_name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">max_lag</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">n_lags</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">approx_range</span><span class="p">:</span> <span class="nb">float</span>
+</code></pre></div></td></tr></table></div>
+              </details>
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="ragweed_toolkit.spatial.GWRResult" class="doc doc-heading">
+            <code>GWRResult</code>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Summary of a GWR fit with local coefficient arrays.</p>
+
+
+
+
+
+
+
+
+              <details class="mkdocstrings-source">
+                <summary>Source code in <code>src/ragweed_toolkit/spatial/gwr.py</code></summary>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">47</span>
+<span class="normal">48</span>
+<span class="normal">49</span>
+<span class="normal">50</span>
+<span class="normal">51</span>
+<span class="normal">52</span>
+<span class="normal">53</span>
+<span class="normal">54</span>
+<span class="normal">55</span>
+<span class="normal">56</span>
+<span class="normal">57</span>
+<span class="normal">58</span>
+<span class="normal">59</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">GWRResult</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Summary of a GWR fit with local coefficient arrays.&quot;&quot;&quot;</span>
+
+    <span class="n">r2</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">adj_r2</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">aicc</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">bandwidth</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">n</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">k</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">local_r2</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">local_betas</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span>
+    <span class="n">residuals</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+</code></pre></div></td></tr></table></div>
+              </details>
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="ragweed_toolkit.spatial.ModelComparison" class="doc doc-heading">
+            <code>ModelComparison</code>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Side-by-side OLS vs GWR metrics.</p>
+
+
+
+
+
+
+
+
+              <details class="mkdocstrings-source">
+                <summary>Source code in <code>src/ragweed_toolkit/spatial/gwr.py</code></summary>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">62</span>
+<span class="normal">63</span>
+<span class="normal">64</span>
+<span class="normal">65</span>
+<span class="normal">66</span>
+<span class="normal">67</span>
+<span class="normal">68</span>
+<span class="normal">69</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ModelComparison</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Side-by-side OLS vs GWR metrics.&quot;&quot;&quot;</span>
+
+    <span class="n">ols</span><span class="p">:</span> <span class="n">OLSResult</span>
+    <span class="n">gwr</span><span class="p">:</span> <span class="n">GWRResult</span>
+    <span class="n">r2_improvement</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">aicc_delta</span><span class="p">:</span> <span class="nb">float</span>
+</code></pre></div></td></tr></table></div>
+              </details>
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="ragweed_toolkit.spatial.OLSResult" class="doc doc-heading">
+            <code>OLSResult</code>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Summary of an OLS regression fit.</p>
+
+
+
+
+
+
+
+
+              <details class="mkdocstrings-source">
+                <summary>Source code in <code>src/ragweed_toolkit/spatial/gwr.py</code></summary>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">35</span>
+<span class="normal">36</span>
+<span class="normal">37</span>
+<span class="normal">38</span>
+<span class="normal">39</span>
+<span class="normal">40</span>
+<span class="normal">41</span>
+<span class="normal">42</span>
+<span class="normal">43</span>
+<span class="normal">44</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">OLSResult</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Summary of an OLS regression fit.&quot;&quot;&quot;</span>
+
+    <span class="n">r2</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">adj_r2</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">aic</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">n</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">k</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">coefficients</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span>
+</code></pre></div></td></tr></table></div>
+              </details>
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="ragweed_toolkit.spatial.build_distance_weights" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">build_distance_weights</span><span class="p">(</span><span class="n">gdf</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">15.0</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">x_col</span><span class="o">=</span><span class="s1">&#39;geometry&#39;</span><span class="p">,</span> <span class="n">max_retries</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Build a row-standardised DistanceBand weight matrix.</p>
+<p>If isolated observations (islands) exist at the requested threshold,
+the threshold is increased by 5 m and retried up to <em>max_retries</em> times.</p>
+<h5 id="ragweed_toolkit.spatial.build_distance_weights--parameters">Parameters</h5>
+<p>gdf : GeoDataFrame
+    Point geometries in a projected CRS (metres).
+threshold : float
+    Distance cutoff in metres.
+x_col : str
+    Ignored (coords extracted from geometry).
+max_retries : int
+    Maximum number of automatic threshold increases.</p>
+<h5 id="ragweed_toolkit.spatial.build_distance_weights--returns">Returns</h5>
+<p>DistanceBand
+    Row-standardised spatial weight matrix.</p>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src/ragweed_toolkit/spatial/morans.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">56</span>
+<span class="normal">57</span>
+<span class="normal">58</span>
+<span class="normal">59</span>
+<span class="normal">60</span>
+<span class="normal">61</span>
+<span class="normal">62</span>
+<span class="normal">63</span>
+<span class="normal">64</span>
+<span class="normal">65</span>
+<span class="normal">66</span>
+<span class="normal">67</span>
+<span class="normal">68</span>
+<span class="normal">69</span>
+<span class="normal">70</span>
+<span class="normal">71</span>
+<span class="normal">72</span>
+<span class="normal">73</span>
+<span class="normal">74</span>
+<span class="normal">75</span>
+<span class="normal">76</span>
+<span class="normal">77</span>
+<span class="normal">78</span>
+<span class="normal">79</span>
+<span class="normal">80</span>
+<span class="normal">81</span>
+<span class="normal">82</span>
+<span class="normal">83</span>
+<span class="normal">84</span>
+<span class="normal">85</span>
+<span class="normal">86</span>
+<span class="normal">87</span>
+<span class="normal">88</span>
+<span class="normal">89</span>
+<span class="normal">90</span>
+<span class="normal">91</span>
+<span class="normal">92</span>
+<span class="normal">93</span>
+<span class="normal">94</span>
+<span class="normal">95</span>
+<span class="normal">96</span>
+<span class="normal">97</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">build_distance_weights</span><span class="p">(</span>
+    <span class="n">gdf</span><span class="p">:</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">,</span>
+    <span class="n">threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">15.0</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">x_col</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;geometry&quot;</span><span class="p">,</span>
+    <span class="n">max_retries</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DistanceBand</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Build a row-standardised DistanceBand weight matrix.</span>
+
+<span class="sd">    If isolated observations (islands) exist at the requested threshold,</span>
+<span class="sd">    the threshold is increased by 5 m and retried up to *max_retries* times.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    gdf : GeoDataFrame</span>
+<span class="sd">        Point geometries in a projected CRS (metres).</span>
+<span class="sd">    threshold : float</span>
+<span class="sd">        Distance cutoff in metres.</span>
+<span class="sd">    x_col : str</span>
+<span class="sd">        Ignored (coords extracted from geometry).</span>
+<span class="sd">    max_retries : int</span>
+<span class="sd">        Maximum number of automatic threshold increases.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    DistanceBand</span>
+<span class="sd">        Row-standardised spatial weight matrix.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">coords</span> <span class="o">=</span> <span class="p">[(</span><span class="n">geom</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">geom</span><span class="o">.</span><span class="n">y</span><span class="p">)</span> <span class="k">for</span> <span class="n">geom</span> <span class="ow">in</span> <span class="n">gdf</span><span class="o">.</span><span class="n">geometry</span><span class="p">]</span>
+
+    <span class="k">for</span> <span class="n">attempt</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_retries</span><span class="p">):</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="n">DistanceBand</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="n">threshold</span><span class="p">,</span> <span class="n">binary</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">silence_warnings</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">w</span><span class="o">.</span><span class="n">transform</span> <span class="o">=</span> <span class="s2">&quot;r&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">islands</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">w</span>
+        <span class="n">threshold</span> <span class="o">+=</span> <span class="mf">5.0</span>
+
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;Could not eliminate islands after </span><span class="si">{</span><span class="n">max_retries</span><span class="si">}</span><span class="s2"> retries &quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;(last threshold=</span><span class="si">{</span><span class="n">threshold</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2"> m).&quot;</span>
+    <span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="ragweed_toolkit.spatial.compare_ols_gwr" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">compare_ols_gwr</span><span class="p">(</span><span class="n">gdf</span><span class="p">,</span> <span class="n">y_col</span><span class="p">,</span> <span class="n">x_cols</span><span class="p">,</span> <span class="o">**</span><span class="n">gwr_kwargs</span><span class="p">)</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Fit both OLS and GWR and return a side-by-side comparison.</p>
+<h5 id="ragweed_toolkit.spatial.compare_ols_gwr--parameters">Parameters</h5>
+<p>gdf : GeoDataFrame
+    Point observations in a projected CRS.
+y_col : str
+    Dependent variable column.
+x_cols : sequence of str
+    Predictor column names.
+**gwr_kwargs
+    Additional keyword arguments forwarded to :func:<code>fit_gwr</code>.</p>
+<h5 id="ragweed_toolkit.spatial.compare_ols_gwr--returns">Returns</h5>
+<p>ModelComparison
+    Contains <code>ols</code>, <code>gwr</code>, <code>r2_improvement</code>, and <code>aicc_delta</code>.</p>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src/ragweed_toolkit/spatial/gwr.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">194</span>
+<span class="normal">195</span>
+<span class="normal">196</span>
+<span class="normal">197</span>
+<span class="normal">198</span>
+<span class="normal">199</span>
+<span class="normal">200</span>
+<span class="normal">201</span>
+<span class="normal">202</span>
+<span class="normal">203</span>
+<span class="normal">204</span>
+<span class="normal">205</span>
+<span class="normal">206</span>
+<span class="normal">207</span>
+<span class="normal">208</span>
+<span class="normal">209</span>
+<span class="normal">210</span>
+<span class="normal">211</span>
+<span class="normal">212</span>
+<span class="normal">213</span>
+<span class="normal">214</span>
+<span class="normal">215</span>
+<span class="normal">216</span>
+<span class="normal">217</span>
+<span class="normal">218</span>
+<span class="normal">219</span>
+<span class="normal">220</span>
+<span class="normal">221</span>
+<span class="normal">222</span>
+<span class="normal">223</span>
+<span class="normal">224</span>
+<span class="normal">225</span>
+<span class="normal">226</span>
+<span class="normal">227</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">compare_ols_gwr</span><span class="p">(</span>
+    <span class="n">gdf</span><span class="p">:</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">,</span>
+    <span class="n">y_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">x_cols</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+    <span class="o">**</span><span class="n">gwr_kwargs</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ModelComparison</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Fit both OLS and GWR and return a side-by-side comparison.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    gdf : GeoDataFrame</span>
+<span class="sd">        Point observations in a projected CRS.</span>
+<span class="sd">    y_col : str</span>
+<span class="sd">        Dependent variable column.</span>
+<span class="sd">    x_cols : sequence of str</span>
+<span class="sd">        Predictor column names.</span>
+<span class="sd">    **gwr_kwargs</span>
+<span class="sd">        Additional keyword arguments forwarded to :func:`fit_gwr`.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ModelComparison</span>
+<span class="sd">        Contains ``ols``, ``gwr``, ``r2_improvement``, and ``aicc_delta``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">ols_result</span> <span class="o">=</span> <span class="n">fit_ols</span><span class="p">(</span><span class="n">gdf</span><span class="p">,</span> <span class="n">y_col</span><span class="p">,</span> <span class="n">x_cols</span><span class="p">)</span>
+    <span class="n">gwr_result</span> <span class="o">=</span> <span class="n">fit_gwr</span><span class="p">(</span><span class="n">gdf</span><span class="p">,</span> <span class="n">y_col</span><span class="p">,</span> <span class="n">x_cols</span><span class="p">,</span> <span class="o">**</span><span class="n">gwr_kwargs</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">ModelComparison</span><span class="p">(</span>
+        <span class="n">ols</span><span class="o">=</span><span class="n">ols_result</span><span class="p">,</span>
+        <span class="n">gwr</span><span class="o">=</span><span class="n">gwr_result</span><span class="p">,</span>
+        <span class="n">r2_improvement</span><span class="o">=</span><span class="n">gwr_result</span><span class="o">.</span><span class="n">r2</span> <span class="o">-</span> <span class="n">ols_result</span><span class="o">.</span><span class="n">r2</span><span class="p">,</span>
+        <span class="n">aicc_delta</span><span class="o">=</span><span class="n">gwr_result</span><span class="o">.</span><span class="n">aicc</span> <span class="o">-</span> <span class="n">ols_result</span><span class="o">.</span><span class="n">aic</span><span class="p">,</span>
+    <span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="ragweed_toolkit.spatial.compute_bivariate_lisa" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">compute_bivariate_lisa</span><span class="p">(</span><span class="n">gdf</span><span class="p">,</span> <span class="n">var_x</span><span class="p">,</span> <span class="n">var_y</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">15.0</span><span class="p">,</span> <span class="n">permutations</span><span class="o">=</span><span class="mi">999</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">w</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Compute bivariate Local Moran's I and classify into LISA clusters.</p>
+<h5 id="ragweed_toolkit.spatial.compute_bivariate_lisa--parameters">Parameters</h5>
+<p>gdf : GeoDataFrame
+    Point observations in a projected CRS with columns <em>var_x</em> and <em>var_y</em>.
+var_x : str
+    Column name for the first variable.
+var_y : str
+    Column name for the second variable.
+threshold : float
+    Distance threshold for the spatial weight matrix (metres).
+permutations : int
+    Number of permutations for pseudo p-values.
+alpha : float
+    Significance level for cluster classification.
+w : DistanceBand, optional
+    Pre-computed weight matrix.</p>
+<h5 id="ragweed_toolkit.spatial.compute_bivariate_lisa--returns">Returns</h5>
+<p>GeoDataFrame
+    Copy of <em>gdf</em> with added columns:</p>
+<pre><code>- ``lisa_cluster`` : str -- one of HH, HL, LH, LL, NS
+- ``lisa_Ii`` : float -- local Moran's I statistic
+- ``lisa_p`` : float -- pseudo p-value
+- ``lisa_q`` : int -- quadrant code (1=HH, 2=LH, 3=LL, 4=HL)
+</code></pre>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src/ragweed_toolkit/spatial/lisa.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 41</span>
+<span class="normal"> 42</span>
+<span class="normal"> 43</span>
+<span class="normal"> 44</span>
+<span class="normal"> 45</span>
+<span class="normal"> 46</span>
+<span class="normal"> 47</span>
+<span class="normal"> 48</span>
+<span class="normal"> 49</span>
+<span class="normal"> 50</span>
+<span class="normal"> 51</span>
+<span class="normal"> 52</span>
+<span class="normal"> 53</span>
+<span class="normal"> 54</span>
+<span class="normal"> 55</span>
+<span class="normal"> 56</span>
+<span class="normal"> 57</span>
+<span class="normal"> 58</span>
+<span class="normal"> 59</span>
+<span class="normal"> 60</span>
+<span class="normal"> 61</span>
+<span class="normal"> 62</span>
+<span class="normal"> 63</span>
+<span class="normal"> 64</span>
+<span class="normal"> 65</span>
+<span class="normal"> 66</span>
+<span class="normal"> 67</span>
+<span class="normal"> 68</span>
+<span class="normal"> 69</span>
+<span class="normal"> 70</span>
+<span class="normal"> 71</span>
+<span class="normal"> 72</span>
+<span class="normal"> 73</span>
+<span class="normal"> 74</span>
+<span class="normal"> 75</span>
+<span class="normal"> 76</span>
+<span class="normal"> 77</span>
+<span class="normal"> 78</span>
+<span class="normal"> 79</span>
+<span class="normal"> 80</span>
+<span class="normal"> 81</span>
+<span class="normal"> 82</span>
+<span class="normal"> 83</span>
+<span class="normal"> 84</span>
+<span class="normal"> 85</span>
+<span class="normal"> 86</span>
+<span class="normal"> 87</span>
+<span class="normal"> 88</span>
+<span class="normal"> 89</span>
+<span class="normal"> 90</span>
+<span class="normal"> 91</span>
+<span class="normal"> 92</span>
+<span class="normal"> 93</span>
+<span class="normal"> 94</span>
+<span class="normal"> 95</span>
+<span class="normal"> 96</span>
+<span class="normal"> 97</span>
+<span class="normal"> 98</span>
+<span class="normal"> 99</span>
+<span class="normal">100</span>
+<span class="normal">101</span>
+<span class="normal">102</span>
+<span class="normal">103</span>
+<span class="normal">104</span>
+<span class="normal">105</span>
+<span class="normal">106</span>
+<span class="normal">107</span>
+<span class="normal">108</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">compute_bivariate_lisa</span><span class="p">(</span>
+    <span class="n">gdf</span><span class="p">:</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">,</span>
+    <span class="n">var_x</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">var_y</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">15.0</span><span class="p">,</span>
+    <span class="n">permutations</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">999</span><span class="p">,</span>
+    <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span>
+    <span class="n">w</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">DistanceBand</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute bivariate Local Moran&#39;s I and classify into LISA clusters.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    gdf : GeoDataFrame</span>
+<span class="sd">        Point observations in a projected CRS with columns *var_x* and *var_y*.</span>
+<span class="sd">    var_x : str</span>
+<span class="sd">        Column name for the first variable.</span>
+<span class="sd">    var_y : str</span>
+<span class="sd">        Column name for the second variable.</span>
+<span class="sd">    threshold : float</span>
+<span class="sd">        Distance threshold for the spatial weight matrix (metres).</span>
+<span class="sd">    permutations : int</span>
+<span class="sd">        Number of permutations for pseudo p-values.</span>
+<span class="sd">    alpha : float</span>
+<span class="sd">        Significance level for cluster classification.</span>
+<span class="sd">    w : DistanceBand, optional</span>
+<span class="sd">        Pre-computed weight matrix.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    GeoDataFrame</span>
+<span class="sd">        Copy of *gdf* with added columns:</span>
+
+<span class="sd">        - ``lisa_cluster`` : str -- one of HH, HL, LH, LL, NS</span>
+<span class="sd">        - ``lisa_Ii`` : float -- local Moran&#39;s I statistic</span>
+<span class="sd">        - ``lisa_p`` : float -- pseudo p-value</span>
+<span class="sd">        - ``lisa_q`` : int -- quadrant code (1=HH, 2=LH, 3=LL, 4=HL)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">gdf</span><span class="p">[</span><span class="n">var_x</span><span class="p">]</span><span class="o">.</span><span class="n">notna</span><span class="p">()</span> <span class="o">&amp;</span> <span class="n">gdf</span><span class="p">[</span><span class="n">var_y</span><span class="p">]</span><span class="o">.</span><span class="n">notna</span><span class="p">()</span>
+    <span class="n">gdf_valid</span> <span class="o">=</span> <span class="n">gdf</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">gdf_valid</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Too few valid observations (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">gdf_valid</span><span class="p">)</span><span class="si">}</span><span class="s2">) for LISA.&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">w</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="n">build_distance_weights</span><span class="p">(</span><span class="n">gdf_valid</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="n">threshold</span><span class="p">)</span>
+
+    <span class="n">x</span> <span class="o">=</span> <span class="n">gdf_valid</span><span class="p">[</span><span class="n">var_x</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">gdf_valid</span><span class="p">[</span><span class="n">var_y</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+
+    <span class="n">lm</span> <span class="o">=</span> <span class="n">Moran_Local_BV</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">permutations</span><span class="o">=</span><span class="n">permutations</span><span class="p">)</span>
+
+    <span class="c1"># Classify into quadrants</span>
+    <span class="n">labels</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">gdf_valid</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="n">lm</span><span class="o">.</span><span class="n">p_sim</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">alpha</span><span class="p">:</span>
+            <span class="n">labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">QUADRANT_MAP</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">lm</span><span class="o">.</span><span class="n">q</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="s2">&quot;NS&quot;</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;NS&quot;</span><span class="p">)</span>
+
+    <span class="n">gdf_result</span> <span class="o">=</span> <span class="n">gdf_valid</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">gdf_result</span><span class="p">[</span><span class="s2">&quot;lisa_cluster&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">labels</span>
+    <span class="n">gdf_result</span><span class="p">[</span><span class="s2">&quot;lisa_Ii&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">lm</span><span class="o">.</span><span class="n">Is</span>
+    <span class="n">gdf_result</span><span class="p">[</span><span class="s2">&quot;lisa_p&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">lm</span><span class="o">.</span><span class="n">p_sim</span>
+    <span class="n">gdf_result</span><span class="p">[</span><span class="s2">&quot;lisa_q&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">lm</span><span class="o">.</span><span class="n">q</span>
+
+    <span class="k">return</span> <span class="n">gdf_result</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="ragweed_toolkit.spatial.compute_bivariate_morans" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">compute_bivariate_morans</span><span class="p">(</span><span class="n">gdf</span><span class="p">,</span> <span class="n">var_x</span><span class="p">,</span> <span class="n">var_y</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">15.0</span><span class="p">,</span> <span class="n">permutations</span><span class="o">=</span><span class="mi">999</span><span class="p">,</span> <span class="n">w</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Compute the bivariate global Moran's I between two variables.</p>
+<h5 id="ragweed_toolkit.spatial.compute_bivariate_morans--parameters">Parameters</h5>
+<p>gdf : GeoDataFrame
+    Point observations in a projected CRS with columns <em>var_x</em> and <em>var_y</em>.
+var_x : str
+    Column name for the first variable (spatially lagged).
+var_y : str
+    Column name for the second variable (focal).
+threshold : float
+    Distance threshold for the DistanceBand weight matrix (metres).
+permutations : int
+    Number of random permutations for pseudo p-value.
+w : DistanceBand, optional
+    Pre-computed weight matrix.  Built from <em>gdf</em> when <em>None</em>.</p>
+<h5 id="ragweed_toolkit.spatial.compute_bivariate_morans--returns">Returns</h5>
+<p>BivariateMoranResult</p>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src/ragweed_toolkit/spatial/morans.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">100</span>
+<span class="normal">101</span>
+<span class="normal">102</span>
+<span class="normal">103</span>
+<span class="normal">104</span>
+<span class="normal">105</span>
+<span class="normal">106</span>
+<span class="normal">107</span>
+<span class="normal">108</span>
+<span class="normal">109</span>
+<span class="normal">110</span>
+<span class="normal">111</span>
+<span class="normal">112</span>
+<span class="normal">113</span>
+<span class="normal">114</span>
+<span class="normal">115</span>
+<span class="normal">116</span>
+<span class="normal">117</span>
+<span class="normal">118</span>
+<span class="normal">119</span>
+<span class="normal">120</span>
+<span class="normal">121</span>
+<span class="normal">122</span>
+<span class="normal">123</span>
+<span class="normal">124</span>
+<span class="normal">125</span>
+<span class="normal">126</span>
+<span class="normal">127</span>
+<span class="normal">128</span>
+<span class="normal">129</span>
+<span class="normal">130</span>
+<span class="normal">131</span>
+<span class="normal">132</span>
+<span class="normal">133</span>
+<span class="normal">134</span>
+<span class="normal">135</span>
+<span class="normal">136</span>
+<span class="normal">137</span>
+<span class="normal">138</span>
+<span class="normal">139</span>
+<span class="normal">140</span>
+<span class="normal">141</span>
+<span class="normal">142</span>
+<span class="normal">143</span>
+<span class="normal">144</span>
+<span class="normal">145</span>
+<span class="normal">146</span>
+<span class="normal">147</span>
+<span class="normal">148</span>
+<span class="normal">149</span>
+<span class="normal">150</span>
+<span class="normal">151</span>
+<span class="normal">152</span>
+<span class="normal">153</span>
+<span class="normal">154</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">compute_bivariate_morans</span><span class="p">(</span>
+    <span class="n">gdf</span><span class="p">:</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">,</span>
+    <span class="n">var_x</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">var_y</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">15.0</span><span class="p">,</span>
+    <span class="n">permutations</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">999</span><span class="p">,</span>
+    <span class="n">w</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">DistanceBand</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BivariateMoranResult</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute the bivariate global Moran&#39;s I between two variables.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    gdf : GeoDataFrame</span>
+<span class="sd">        Point observations in a projected CRS with columns *var_x* and *var_y*.</span>
+<span class="sd">    var_x : str</span>
+<span class="sd">        Column name for the first variable (spatially lagged).</span>
+<span class="sd">    var_y : str</span>
+<span class="sd">        Column name for the second variable (focal).</span>
+<span class="sd">    threshold : float</span>
+<span class="sd">        Distance threshold for the DistanceBand weight matrix (metres).</span>
+<span class="sd">    permutations : int</span>
+<span class="sd">        Number of random permutations for pseudo p-value.</span>
+<span class="sd">    w : DistanceBand, optional</span>
+<span class="sd">        Pre-computed weight matrix.  Built from *gdf* when *None*.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    BivariateMoranResult</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Drop NaN rows</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">gdf</span><span class="p">[</span><span class="n">var_x</span><span class="p">]</span><span class="o">.</span><span class="n">notna</span><span class="p">()</span> <span class="o">&amp;</span> <span class="n">gdf</span><span class="p">[</span><span class="n">var_y</span><span class="p">]</span><span class="o">.</span><span class="n">notna</span><span class="p">()</span>
+    <span class="n">gdf_valid</span> <span class="o">=</span> <span class="n">gdf</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">gdf_valid</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Too few valid observations (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">gdf_valid</span><span class="p">)</span><span class="si">}</span><span class="s2">) for Moran&#39;s I.&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">w</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="n">build_distance_weights</span><span class="p">(</span><span class="n">gdf_valid</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="n">threshold</span><span class="p">)</span>
+
+    <span class="n">x</span> <span class="o">=</span> <span class="n">gdf_valid</span><span class="p">[</span><span class="n">var_x</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">gdf_valid</span><span class="p">[</span><span class="n">var_y</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+
+    <span class="n">bv</span> <span class="o">=</span> <span class="n">Moran_BV</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">permutations</span><span class="o">=</span><span class="n">permutations</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">BivariateMoranResult</span><span class="p">(</span>
+        <span class="n">I</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">bv</span><span class="o">.</span><span class="n">I</span><span class="p">),</span>
+        <span class="n">p_value</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">bv</span><span class="o">.</span><span class="n">p_sim</span><span class="p">),</span>
+        <span class="n">z_score</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">bv</span><span class="o">.</span><span class="n">z_sim</span><span class="p">),</span>
+        <span class="n">permutations</span><span class="o">=</span><span class="n">permutations</span><span class="p">,</span>
+        <span class="n">var_x</span><span class="o">=</span><span class="n">var_x</span><span class="p">,</span>
+        <span class="n">var_y</span><span class="o">=</span><span class="n">var_y</span><span class="p">,</span>
+        <span class="n">n</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">gdf_valid</span><span class="p">),</span>
+        <span class="n">threshold</span><span class="o">=</span><span class="n">threshold</span><span class="p">,</span>
+    <span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="ragweed_toolkit.spatial.compute_cross_variogram" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">compute_cross_variogram</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">z1</span><span class="p">,</span> <span class="n">z2</span><span class="p">,</span> <span class="n">n_lags</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">max_lag</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Compute the experimental cross-semivariogram between <em>z1</em> and <em>z2</em>.</p>
+<h5 id="ragweed_toolkit.spatial.compute_cross_variogram--parameters">Parameters</h5>
+<p>coords : ndarray, shape (n, 2)
+    Projected coordinates (UTM).
+z1 : ndarray, shape (n,)
+    First variable values.
+z2 : ndarray, shape (n,)
+    Second variable values.
+n_lags : int
+    Number of distance bins.
+max_lag : float, optional
+    Maximum lag distance. Defaults to the median pairwise distance
+    (estimated from a random sample for large datasets).</p>
+<h5 id="ragweed_toolkit.spatial.compute_cross_variogram--returns">Returns</h5>
+<p>CrossVariogramResult</p>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src/ragweed_toolkit/spatial/cross_variograms.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 44</span>
+<span class="normal"> 45</span>
+<span class="normal"> 46</span>
+<span class="normal"> 47</span>
+<span class="normal"> 48</span>
+<span class="normal"> 49</span>
+<span class="normal"> 50</span>
+<span class="normal"> 51</span>
+<span class="normal"> 52</span>
+<span class="normal"> 53</span>
+<span class="normal"> 54</span>
+<span class="normal"> 55</span>
+<span class="normal"> 56</span>
+<span class="normal"> 57</span>
+<span class="normal"> 58</span>
+<span class="normal"> 59</span>
+<span class="normal"> 60</span>
+<span class="normal"> 61</span>
+<span class="normal"> 62</span>
+<span class="normal"> 63</span>
+<span class="normal"> 64</span>
+<span class="normal"> 65</span>
+<span class="normal"> 66</span>
+<span class="normal"> 67</span>
+<span class="normal"> 68</span>
+<span class="normal"> 69</span>
+<span class="normal"> 70</span>
+<span class="normal"> 71</span>
+<span class="normal"> 72</span>
+<span class="normal"> 73</span>
+<span class="normal"> 74</span>
+<span class="normal"> 75</span>
+<span class="normal"> 76</span>
+<span class="normal"> 77</span>
+<span class="normal"> 78</span>
+<span class="normal"> 79</span>
+<span class="normal"> 80</span>
+<span class="normal"> 81</span>
+<span class="normal"> 82</span>
+<span class="normal"> 83</span>
+<span class="normal"> 84</span>
+<span class="normal"> 85</span>
+<span class="normal"> 86</span>
+<span class="normal"> 87</span>
+<span class="normal"> 88</span>
+<span class="normal"> 89</span>
+<span class="normal"> 90</span>
+<span class="normal"> 91</span>
+<span class="normal"> 92</span>
+<span class="normal"> 93</span>
+<span class="normal"> 94</span>
+<span class="normal"> 95</span>
+<span class="normal"> 96</span>
+<span class="normal"> 97</span>
+<span class="normal"> 98</span>
+<span class="normal"> 99</span>
+<span class="normal">100</span>
+<span class="normal">101</span>
+<span class="normal">102</span>
+<span class="normal">103</span>
+<span class="normal">104</span>
+<span class="normal">105</span>
+<span class="normal">106</span>
+<span class="normal">107</span>
+<span class="normal">108</span>
+<span class="normal">109</span>
+<span class="normal">110</span>
+<span class="normal">111</span>
+<span class="normal">112</span>
+<span class="normal">113</span>
+<span class="normal">114</span>
+<span class="normal">115</span>
+<span class="normal">116</span>
+<span class="normal">117</span>
+<span class="normal">118</span>
+<span class="normal">119</span>
+<span class="normal">120</span>
+<span class="normal">121</span>
+<span class="normal">122</span>
+<span class="normal">123</span>
+<span class="normal">124</span>
+<span class="normal">125</span>
+<span class="normal">126</span>
+<span class="normal">127</span>
+<span class="normal">128</span>
+<span class="normal">129</span>
+<span class="normal">130</span>
+<span class="normal">131</span>
+<span class="normal">132</span>
+<span class="normal">133</span>
+<span class="normal">134</span>
+<span class="normal">135</span>
+<span class="normal">136</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">compute_cross_variogram</span><span class="p">(</span>
+    <span class="n">coords</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">z1</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">z2</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">n_lags</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">15</span><span class="p">,</span>
+    <span class="n">max_lag</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CrossVariogramResult</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute the experimental cross-semivariogram between *z1* and *z2*.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    coords : ndarray, shape (n, 2)</span>
+<span class="sd">        Projected coordinates (UTM).</span>
+<span class="sd">    z1 : ndarray, shape (n,)</span>
+<span class="sd">        First variable values.</span>
+<span class="sd">    z2 : ndarray, shape (n,)</span>
+<span class="sd">        Second variable values.</span>
+<span class="sd">    n_lags : int</span>
+<span class="sd">        Number of distance bins.</span>
+<span class="sd">    max_lag : float, optional</span>
+<span class="sd">        Maximum lag distance. Defaults to the median pairwise distance</span>
+<span class="sd">        (estimated from a random sample for large datasets).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    CrossVariogramResult</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">z1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">z1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">z2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">z2</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">z1</span><span class="p">)</span>
+
+    <span class="c1"># Estimate max_lag from a sample if not provided</span>
+    <span class="k">if</span> <span class="n">max_lag</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">n</span> <span class="o">&gt;</span> <span class="mi">2000</span><span class="p">:</span>
+            <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
+            <span class="n">idx</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="n">sample_coords</span> <span class="o">=</span> <span class="n">coords</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">sample_coords</span> <span class="o">=</span> <span class="n">coords</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.spatial.distance</span><span class="w"> </span><span class="kn">import</span> <span class="n">pdist</span>
+        <span class="n">max_lag</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">pdist</span><span class="p">(</span><span class="n">sample_coords</span><span class="p">)))</span>
+
+    <span class="n">lag_edges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">max_lag</span><span class="p">,</span> <span class="n">n_lags</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">lag_centers</span> <span class="o">=</span> <span class="p">(</span><span class="n">lag_edges</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">lag_edges</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span> <span class="o">/</span> <span class="mi">2</span>
+    <span class="n">gamma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">n_lags</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+    <span class="n">counts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_lags</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+
+    <span class="c1"># Use cKDTree for efficient pair finding</span>
+    <span class="n">tree</span> <span class="o">=</span> <span class="n">cKDTree</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_lags</span><span class="p">):</span>
+        <span class="n">lo</span><span class="p">,</span> <span class="n">hi</span> <span class="o">=</span> <span class="n">lag_edges</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">lag_edges</span><span class="p">[</span><span class="n">k</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="p">(</span><span class="n">lo</span> <span class="o">+</span> <span class="n">hi</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+        <span class="p">(</span><span class="n">hi</span> <span class="o">-</span> <span class="n">lo</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+
+        <span class="c1"># Find all pairs within hi</span>
+        <span class="n">pairs_hi</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">query_pairs</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="n">hi</span><span class="p">,</span> <span class="n">output_type</span><span class="o">=</span><span class="s2">&quot;ndarray&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">pairs_hi</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">continue</span>
+
+        <span class="c1"># Compute actual distances for these pairs</span>
+        <span class="n">dists</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
+            <span class="p">(</span><span class="n">coords</span><span class="p">[</span><span class="n">pairs_hi</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">coords</span><span class="p">[</span><span class="n">pairs_hi</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="mi">0</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span>
+            <span class="o">+</span> <span class="p">(</span><span class="n">coords</span><span class="p">[</span><span class="n">pairs_hi</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">coords</span><span class="p">[</span><span class="n">pairs_hi</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="mi">1</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Filter to this lag bin</span>
+        <span class="n">in_bin</span> <span class="o">=</span> <span class="p">(</span><span class="n">dists</span> <span class="o">&gt;</span> <span class="n">lo</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">dists</span> <span class="o">&lt;=</span> <span class="n">hi</span><span class="p">)</span>
+        <span class="n">bin_pairs</span> <span class="o">=</span> <span class="n">pairs_hi</span><span class="p">[</span><span class="n">in_bin</span><span class="p">]</span>
+        <span class="n">npairs</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">bin_pairs</span><span class="p">)</span>
+        <span class="n">counts</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">npairs</span>
+
+        <span class="k">if</span> <span class="n">npairs</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">i_idx</span> <span class="o">=</span> <span class="n">bin_pairs</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+            <span class="n">j_idx</span> <span class="o">=</span> <span class="n">bin_pairs</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
+            <span class="n">diffs</span> <span class="o">=</span> <span class="p">(</span><span class="n">z1</span><span class="p">[</span><span class="n">i_idx</span><span class="p">]</span> <span class="o">-</span> <span class="n">z1</span><span class="p">[</span><span class="n">j_idx</span><span class="p">])</span> <span class="o">*</span> <span class="p">(</span><span class="n">z2</span><span class="p">[</span><span class="n">i_idx</span><span class="p">]</span> <span class="o">-</span> <span class="n">z2</span><span class="p">[</span><span class="n">j_idx</span><span class="p">])</span>
+            <span class="n">gamma</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">diffs</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">npairs</span><span class="p">)</span>
+
+    <span class="c1"># Approximate range (distance at which 90% of sill is reached)</span>
+    <span class="n">approx_range</span> <span class="o">=</span> <span class="n">_estimate_range</span><span class="p">(</span><span class="n">lag_centers</span><span class="p">,</span> <span class="n">gamma</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">CrossVariogramResult</span><span class="p">(</span>
+        <span class="n">lag_centers</span><span class="o">=</span><span class="n">lag_centers</span><span class="p">,</span>
+        <span class="n">gamma</span><span class="o">=</span><span class="n">gamma</span><span class="p">,</span>
+        <span class="n">pair_counts</span><span class="o">=</span><span class="n">counts</span><span class="p">,</span>
+        <span class="n">var1_name</span><span class="o">=</span><span class="s2">&quot;z1&quot;</span><span class="p">,</span>
+        <span class="n">var2_name</span><span class="o">=</span><span class="s2">&quot;z2&quot;</span><span class="p">,</span>
+        <span class="n">max_lag</span><span class="o">=</span><span class="n">max_lag</span><span class="p">,</span>
+        <span class="n">n_lags</span><span class="o">=</span><span class="n">n_lags</span><span class="p">,</span>
+        <span class="n">approx_range</span><span class="o">=</span><span class="n">approx_range</span><span class="p">,</span>
+    <span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="ragweed_toolkit.spatial.fit_cross_variogram_model" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">fit_cross_variogram_model</span><span class="p">(</span><span class="n">result</span><span class="p">)</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Fit an exponential model to the cross-variogram.</p>
+<h5 id="ragweed_toolkit.spatial.fit_cross_variogram_model--returns">Returns</h5>
+<p>dict
+    Keys: <code>nugget</code>, <code>partial_sill</code>, <code>range_param</code>, <code>sill</code>.
+    Returns None if fitting fails.</p>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src/ragweed_toolkit/spatial/cross_variograms.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">159</span>
+<span class="normal">160</span>
+<span class="normal">161</span>
+<span class="normal">162</span>
+<span class="normal">163</span>
+<span class="normal">164</span>
+<span class="normal">165</span>
+<span class="normal">166</span>
+<span class="normal">167</span>
+<span class="normal">168</span>
+<span class="normal">169</span>
+<span class="normal">170</span>
+<span class="normal">171</span>
+<span class="normal">172</span>
+<span class="normal">173</span>
+<span class="normal">174</span>
+<span class="normal">175</span>
+<span class="normal">176</span>
+<span class="normal">177</span>
+<span class="normal">178</span>
+<span class="normal">179</span>
+<span class="normal">180</span>
+<span class="normal">181</span>
+<span class="normal">182</span>
+<span class="normal">183</span>
+<span class="normal">184</span>
+<span class="normal">185</span>
+<span class="normal">186</span>
+<span class="normal">187</span>
+<span class="normal">188</span>
+<span class="normal">189</span>
+<span class="normal">190</span>
+<span class="normal">191</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">fit_cross_variogram_model</span><span class="p">(</span>
+    <span class="n">result</span><span class="p">:</span> <span class="n">CrossVariogramResult</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Fit an exponential model to the cross-variogram.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">        Keys: ``nugget``, ``partial_sill``, ``range_param``, ``sill``.</span>
+<span class="sd">        Returns None if fitting fails.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">valid</span> <span class="o">=</span> <span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">gamma</span><span class="p">)</span>
+    <span class="n">h</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">lag_centers</span><span class="p">[</span><span class="n">valid</span><span class="p">]</span>
+    <span class="n">g</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">gamma</span><span class="p">[</span><span class="n">valid</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">h</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_exp_model</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">C0</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">a</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">C0</span> <span class="o">+</span> <span class="n">C</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">h</span> <span class="o">/</span> <span class="n">a</span><span class="p">))</span>
+
+    <span class="n">p0</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">g</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">g</span><span class="p">))</span> <span class="o">-</span> <span class="n">g</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">float</span><span class="p">(</span><span class="n">h</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">h</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span><span class="p">])]</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">popt</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">curve_fit</span><span class="p">(</span><span class="n">_exp_model</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">p0</span><span class="o">=</span><span class="n">p0</span><span class="p">,</span> <span class="n">maxfev</span><span class="o">=</span><span class="mi">10000</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;nugget&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">popt</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+            <span class="s2">&quot;partial_sill&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">popt</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+            <span class="s2">&quot;range_param&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">popt</span><span class="p">[</span><span class="mi">2</span><span class="p">]),</span>
+            <span class="s2">&quot;sill&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">popt</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">popt</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+        <span class="p">}</span>
+    <span class="k">except</span> <span class="ne">RuntimeError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="ragweed_toolkit.spatial.fit_gwr" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">fit_gwr</span><span class="p">(</span><span class="n">gdf</span><span class="p">,</span> <span class="n">y_col</span><span class="p">,</span> <span class="n">x_cols</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">standardise</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">kernel</span><span class="o">=</span><span class="s1">&#39;bisquare&#39;</span><span class="p">,</span> <span class="n">fixed</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">criterion</span><span class="o">=</span><span class="s1">&#39;AICc&#39;</span><span class="p">)</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Fit a GWR model with adaptive bisquare kernel and AICc bandwidth selection.</p>
+<h5 id="ragweed_toolkit.spatial.fit_gwr--parameters">Parameters</h5>
+<p>gdf : GeoDataFrame
+    Point observations in a projected CRS.
+y_col : str
+    Dependent variable column.
+x_cols : sequence of str
+    Predictor column names.
+standardise : bool
+    Whether to z-score standardise predictors.
+kernel : str
+    Kernel type for <code>mgwr</code> (default <code>"bisquare"</code>).
+fixed : bool
+    <code>True</code> for fixed bandwidth (metres), <code>False</code> for adaptive
+    (nearest neighbours).
+criterion : str
+    Bandwidth selection criterion (<code>"AICc"</code> or <code>"AIC"</code>).</p>
+<h5 id="ragweed_toolkit.spatial.fit_gwr--returns">Returns</h5>
+<p>GWRResult</p>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src/ragweed_toolkit/spatial/gwr.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">121</span>
+<span class="normal">122</span>
+<span class="normal">123</span>
+<span class="normal">124</span>
+<span class="normal">125</span>
+<span class="normal">126</span>
+<span class="normal">127</span>
+<span class="normal">128</span>
+<span class="normal">129</span>
+<span class="normal">130</span>
+<span class="normal">131</span>
+<span class="normal">132</span>
+<span class="normal">133</span>
+<span class="normal">134</span>
+<span class="normal">135</span>
+<span class="normal">136</span>
+<span class="normal">137</span>
+<span class="normal">138</span>
+<span class="normal">139</span>
+<span class="normal">140</span>
+<span class="normal">141</span>
+<span class="normal">142</span>
+<span class="normal">143</span>
+<span class="normal">144</span>
+<span class="normal">145</span>
+<span class="normal">146</span>
+<span class="normal">147</span>
+<span class="normal">148</span>
+<span class="normal">149</span>
+<span class="normal">150</span>
+<span class="normal">151</span>
+<span class="normal">152</span>
+<span class="normal">153</span>
+<span class="normal">154</span>
+<span class="normal">155</span>
+<span class="normal">156</span>
+<span class="normal">157</span>
+<span class="normal">158</span>
+<span class="normal">159</span>
+<span class="normal">160</span>
+<span class="normal">161</span>
+<span class="normal">162</span>
+<span class="normal">163</span>
+<span class="normal">164</span>
+<span class="normal">165</span>
+<span class="normal">166</span>
+<span class="normal">167</span>
+<span class="normal">168</span>
+<span class="normal">169</span>
+<span class="normal">170</span>
+<span class="normal">171</span>
+<span class="normal">172</span>
+<span class="normal">173</span>
+<span class="normal">174</span>
+<span class="normal">175</span>
+<span class="normal">176</span>
+<span class="normal">177</span>
+<span class="normal">178</span>
+<span class="normal">179</span>
+<span class="normal">180</span>
+<span class="normal">181</span>
+<span class="normal">182</span>
+<span class="normal">183</span>
+<span class="normal">184</span>
+<span class="normal">185</span>
+<span class="normal">186</span>
+<span class="normal">187</span>
+<span class="normal">188</span>
+<span class="normal">189</span>
+<span class="normal">190</span>
+<span class="normal">191</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">fit_gwr</span><span class="p">(</span>
+    <span class="n">gdf</span><span class="p">:</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">,</span>
+    <span class="n">y_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">x_cols</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">standardise</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">kernel</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;bisquare&quot;</span><span class="p">,</span>
+    <span class="n">fixed</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">criterion</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;AICc&quot;</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GWRResult</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Fit a GWR model with adaptive bisquare kernel and AICc bandwidth selection.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    gdf : GeoDataFrame</span>
+<span class="sd">        Point observations in a projected CRS.</span>
+<span class="sd">    y_col : str</span>
+<span class="sd">        Dependent variable column.</span>
+<span class="sd">    x_cols : sequence of str</span>
+<span class="sd">        Predictor column names.</span>
+<span class="sd">    standardise : bool</span>
+<span class="sd">        Whether to z-score standardise predictors.</span>
+<span class="sd">    kernel : str</span>
+<span class="sd">        Kernel type for ``mgwr`` (default ``&quot;bisquare&quot;``).</span>
+<span class="sd">    fixed : bool</span>
+<span class="sd">        ``True`` for fixed bandwidth (metres), ``False`` for adaptive</span>
+<span class="sd">        (nearest neighbours).</span>
+<span class="sd">    criterion : str</span>
+<span class="sd">        Bandwidth selection criterion (``&quot;AICc&quot;`` or ``&quot;AIC&quot;``).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    GWRResult</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">gdf</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="p">[</span><span class="n">y_col</span><span class="p">]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">x_cols</span><span class="p">))</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+    <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">([</span>
+        <span class="p">[</span><span class="n">geom</span><span class="o">.</span><span class="n">x</span> <span class="k">for</span> <span class="n">geom</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">geometry</span><span class="p">],</span>
+        <span class="p">[</span><span class="n">geom</span><span class="o">.</span><span class="n">y</span> <span class="k">for</span> <span class="n">geom</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">geometry</span><span class="p">],</span>
+    <span class="p">])</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">y_col</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">x_cols</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+
+    <span class="k">if</span> <span class="n">standardise</span><span class="p">:</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">StandardScaler</span><span class="p">()</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+
+    <span class="c1"># Bandwidth selection</span>
+    <span class="n">selector</span> <span class="o">=</span> <span class="n">Sel_BW</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">kernel</span><span class="o">=</span><span class="n">kernel</span><span class="p">,</span> <span class="n">fixed</span><span class="o">=</span><span class="n">fixed</span><span class="p">)</span>
+    <span class="n">bw</span> <span class="o">=</span> <span class="n">selector</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">criterion</span><span class="o">=</span><span class="n">criterion</span><span class="p">,</span> <span class="n">search_method</span><span class="o">=</span><span class="s2">&quot;golden_section&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Fit</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">_GWR</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">bw</span><span class="o">=</span><span class="n">bw</span><span class="p">,</span> <span class="n">kernel</span><span class="o">=</span><span class="n">kernel</span><span class="p">,</span> <span class="n">fixed</span><span class="o">=</span><span class="n">fixed</span><span class="p">)</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
+
+    <span class="c1"># Local betas</span>
+    <span class="n">local_betas</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;intercept&quot;</span><span class="p">:</span> <span class="n">results</span><span class="o">.</span><span class="n">params</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]}</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">x_cols</span><span class="p">):</span>
+        <span class="n">local_betas</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">params</span><span class="p">[:,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">GWRResult</span><span class="p">(</span>
+        <span class="n">r2</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">R2</span><span class="p">),</span>
+        <span class="n">adj_r2</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">adj_R2</span><span class="p">),</span>
+        <span class="n">aicc</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">aicc</span><span class="p">),</span>
+        <span class="n">bandwidth</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">bw</span><span class="p">),</span>
+        <span class="n">n</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">),</span>
+        <span class="n">k</span><span class="o">=</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+        <span class="n">local_r2</span><span class="o">=</span><span class="n">results</span><span class="o">.</span><span class="n">localR2</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span>
+        <span class="n">local_betas</span><span class="o">=</span><span class="n">local_betas</span><span class="p">,</span>
+        <span class="n">residuals</span><span class="o">=</span><span class="n">results</span><span class="o">.</span><span class="n">resid_response</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span>
+    <span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="ragweed_toolkit.spatial.fit_ols" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">fit_ols</span><span class="p">(</span><span class="n">gdf</span><span class="p">,</span> <span class="n">y_col</span><span class="p">,</span> <span class="n">x_cols</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">standardise</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Fit an OLS regression baseline.</p>
+<h5 id="ragweed_toolkit.spatial.fit_ols--parameters">Parameters</h5>
+<p>gdf : GeoDataFrame
+    Observations with columns <em>y_col</em> and each of <em>x_cols</em>.
+y_col : str
+    Dependent variable column.
+x_cols : sequence of str
+    Predictor column names.
+standardise : bool
+    Whether to z-score standardise predictors before fitting.</p>
+<h5 id="ragweed_toolkit.spatial.fit_ols--returns">Returns</h5>
+<p>OLSResult</p>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src/ragweed_toolkit/spatial/gwr.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 72</span>
+<span class="normal"> 73</span>
+<span class="normal"> 74</span>
+<span class="normal"> 75</span>
+<span class="normal"> 76</span>
+<span class="normal"> 77</span>
+<span class="normal"> 78</span>
+<span class="normal"> 79</span>
+<span class="normal"> 80</span>
+<span class="normal"> 81</span>
+<span class="normal"> 82</span>
+<span class="normal"> 83</span>
+<span class="normal"> 84</span>
+<span class="normal"> 85</span>
+<span class="normal"> 86</span>
+<span class="normal"> 87</span>
+<span class="normal"> 88</span>
+<span class="normal"> 89</span>
+<span class="normal"> 90</span>
+<span class="normal"> 91</span>
+<span class="normal"> 92</span>
+<span class="normal"> 93</span>
+<span class="normal"> 94</span>
+<span class="normal"> 95</span>
+<span class="normal"> 96</span>
+<span class="normal"> 97</span>
+<span class="normal"> 98</span>
+<span class="normal"> 99</span>
+<span class="normal">100</span>
+<span class="normal">101</span>
+<span class="normal">102</span>
+<span class="normal">103</span>
+<span class="normal">104</span>
+<span class="normal">105</span>
+<span class="normal">106</span>
+<span class="normal">107</span>
+<span class="normal">108</span>
+<span class="normal">109</span>
+<span class="normal">110</span>
+<span class="normal">111</span>
+<span class="normal">112</span>
+<span class="normal">113</span>
+<span class="normal">114</span>
+<span class="normal">115</span>
+<span class="normal">116</span>
+<span class="normal">117</span>
+<span class="normal">118</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">fit_ols</span><span class="p">(</span>
+    <span class="n">gdf</span><span class="p">:</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">,</span>
+    <span class="n">y_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">x_cols</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">standardise</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OLSResult</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Fit an OLS regression baseline.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    gdf : GeoDataFrame</span>
+<span class="sd">        Observations with columns *y_col* and each of *x_cols*.</span>
+<span class="sd">    y_col : str</span>
+<span class="sd">        Dependent variable column.</span>
+<span class="sd">    x_cols : sequence of str</span>
+<span class="sd">        Predictor column names.</span>
+<span class="sd">    standardise : bool</span>
+<span class="sd">        Whether to z-score standardise predictors before fitting.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    OLSResult</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">gdf</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="p">[</span><span class="n">y_col</span><span class="p">]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">x_cols</span><span class="p">))</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+    <span class="n">y</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">y_col</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">x_cols</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+
+    <span class="k">if</span> <span class="n">standardise</span><span class="p">:</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">StandardScaler</span><span class="p">()</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+
+    <span class="n">ols</span> <span class="o">=</span> <span class="n">OLS</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">name_y</span><span class="o">=</span><span class="n">y_col</span><span class="p">,</span> <span class="n">name_x</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">x_cols</span><span class="p">))</span>
+
+    <span class="n">coefficients</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;intercept&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">ols</span><span class="o">.</span><span class="n">betas</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])}</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">x_cols</span><span class="p">):</span>
+        <span class="n">coefficients</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">ols</span><span class="o">.</span><span class="n">betas</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">OLSResult</span><span class="p">(</span>
+        <span class="n">r2</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">ols</span><span class="o">.</span><span class="n">r2</span><span class="p">),</span>
+        <span class="n">adj_r2</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">ols</span><span class="o">.</span><span class="n">ar2</span><span class="p">),</span>
+        <span class="n">aic</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">ols</span><span class="o">.</span><span class="n">aic</span><span class="p">),</span>
+        <span class="n">n</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">ols</span><span class="o">.</span><span class="n">n</span><span class="p">),</span>
+        <span class="n">k</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">ols</span><span class="o">.</span><span class="n">k</span><span class="p">),</span>
+        <span class="n">coefficients</span><span class="o">=</span><span class="n">coefficients</span><span class="p">,</span>
+    <span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="ragweed_toolkit.spatial.lisa_summary" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">lisa_summary</span><span class="p">(</span><span class="n">gdf</span><span class="p">,</span> <span class="n">cluster_col</span><span class="o">=</span><span class="s1">&#39;lisa_cluster&#39;</span><span class="p">)</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Summarise LISA cluster counts and percentages.</p>
+<h5 id="ragweed_toolkit.spatial.lisa_summary--parameters">Parameters</h5>
+<p>gdf : GeoDataFrame
+    Output from :func:<code>compute_bivariate_lisa</code>.
+cluster_col : str
+    Column containing cluster labels.</p>
+<h5 id="ragweed_toolkit.spatial.lisa_summary--returns">Returns</h5>
+<p>dict
+    Keys: HH, HL, LH, LL, NS -- each a dict with <code>count</code> and <code>pct</code>.</p>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src/ragweed_toolkit/spatial/lisa.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">111</span>
+<span class="normal">112</span>
+<span class="normal">113</span>
+<span class="normal">114</span>
+<span class="normal">115</span>
+<span class="normal">116</span>
+<span class="normal">117</span>
+<span class="normal">118</span>
+<span class="normal">119</span>
+<span class="normal">120</span>
+<span class="normal">121</span>
+<span class="normal">122</span>
+<span class="normal">123</span>
+<span class="normal">124</span>
+<span class="normal">125</span>
+<span class="normal">126</span>
+<span class="normal">127</span>
+<span class="normal">128</span>
+<span class="normal">129</span>
+<span class="normal">130</span>
+<span class="normal">131</span>
+<span class="normal">132</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">lisa_summary</span><span class="p">(</span><span class="n">gdf</span><span class="p">:</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">,</span> <span class="n">cluster_col</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;lisa_cluster&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Summarise LISA cluster counts and percentages.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    gdf : GeoDataFrame</span>
+<span class="sd">        Output from :func:`compute_bivariate_lisa`.</span>
+<span class="sd">    cluster_col : str</span>
+<span class="sd">        Column containing cluster labels.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">        Keys: HH, HL, LH, LL, NS -- each a dict with ``count`` and ``pct``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">gdf</span><span class="p">)</span>
+    <span class="n">summary</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">cat</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;HH&quot;</span><span class="p">,</span> <span class="s2">&quot;HL&quot;</span><span class="p">,</span> <span class="s2">&quot;LH&quot;</span><span class="p">,</span> <span class="s2">&quot;LL&quot;</span><span class="p">,</span> <span class="s2">&quot;NS&quot;</span><span class="p">]:</span>
+        <span class="n">count</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">gdf</span><span class="p">[</span><span class="n">cluster_col</span><span class="p">]</span> <span class="o">==</span> <span class="n">cat</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+        <span class="n">summary</span><span class="p">[</span><span class="n">cat</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;count&quot;</span><span class="p">:</span> <span class="n">count</span><span class="p">,</span> <span class="s2">&quot;pct&quot;</span><span class="p">:</span> <span class="nb">round</span><span class="p">(</span><span class="mi">100</span> <span class="o">*</span> <span class="n">count</span> <span class="o">/</span> <span class="n">n</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="k">if</span> <span class="n">n</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mf">0.0</span><span class="p">}</span>
+    <span class="k">return</span> <span class="n">summary</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
