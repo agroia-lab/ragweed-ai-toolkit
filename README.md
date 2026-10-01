@@ -17,6 +17,13 @@ Companion software to the Springer Nature book chapter:
 > In: *Smart-Agriculture and Technology-Innovation: Facing the Dynamic of Climate Change*
 > (Springer Nature, 2026)
 
+> [!IMPORTANT]
+> **Preprint, code as run, and data (October 2026)**
+> - **Preprint:** León Gutiérrez LF, Ramírez C, Henríquez A, Contreras S (2026). *From Plant Detection to Satellite Mapping: A Multi-Scale AI Toolkit for Ragweed Surveillance under Climate Change.* bioRxiv. https://doi.org/10.64898/2026.09.28.755009
+> - **Original analysis scripts used for the preprint** (AGPL-3.0): https://github.com/agroia-lab/ragweed-multiscale-surveillance. This toolkit is a February 2026 refactor of those methods into an installable package.
+> - **Full Chilean datasets** (CL_Seba, CL_Alberto and the four-class drone dataset), YOLO format, CC BY 4.0: https://doi.org/10.5281/zenodo.23082720
+> - **Licensing note:** the detection modules depend on [Ultralytics YOLO](https://github.com/ultralytics/ultralytics), which is licensed under AGPL-3.0.
+
 ---
 
 ## Visual Overview
